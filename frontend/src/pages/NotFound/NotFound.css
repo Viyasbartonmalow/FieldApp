@@ -1,0 +1,41 @@
+.not-found-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.not-found-container {
+  text-align: center;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 3rem 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+}
+
+.not-found-title {
+  margin: 0;
+  font-size: 5rem;
+  font-weight: 700;
+  color: #007bff;
+  line-height: 1;
+}
+
+.not-found-heading {
+  margin: 1rem 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.not-found-description {
+  margin: 1rem 0 2rem 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.not-found-container button {
+  min-width: 150px;
+}

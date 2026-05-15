@@ -1,0 +1,52 @@
+/* ============================================================
+   URW DIN — Self-Hosted Webfont @font-face Declarations
+   Font file: /public/fonts/URW-DIN.ttf
+   ============================================================ */
+
+/* URW DIN — Regular (400) */
+@font-face {
+  font-family: 'URW DIN';
+  src:
+    url('/fonts/urw-din-regular.woff2') format('woff2'),
+    url('/fonts/urw-din-regular.woff')  format('woff'),
+    url('/fonts/URW-DIN.ttf')           format('truetype');
+  font-weight: 400;
+  font-style:  normal;
+  font-display: swap;
+}
+
+/* URW DIN — Regular Italic */
+@font-face {
+  font-family: 'URW DIN';
+  src:
+    url('/fonts/urw-din-italic.woff2') format('woff2'),
+    url('/fonts/urw-din-italic.woff')  format('woff'),
+    url('/fonts/URW-DIN.ttf')          format('truetype');
+  /* font-weight: 400; */
+  font-style:  italic;
+  font-display: swap;
+}
+
+/* URW DIN — Medium (500) — falls back to same TTF until separate file provided */
+@font-face {
+  font-family: 'URW DIN';
+  src:
+    url('/fonts/urw-din-medium.woff2') format('woff2'),
+    url('/fonts/urw-din-medium.woff')  format('woff'),
+    url('/fonts/URW-DIN.ttf')          format('truetype');
+  /* font-weight: 500; */
+  font-style:  normal;
+  font-display: swap;
+}
+
+/* URW DIN — Bold (700) — falls back to same TTF until separate file provided */
+@font-face {
+  font-family: 'URW DIN';
+  src:
+    url('/fonts/urw-din-bold.woff2') format('woff2'),
+    url('/fonts/urw-din-bold.woff')  format('woff'),
+    url('/fonts/URW-DIN.ttf')        format('truetype');
+  /* font-weight: 700; */
+  font-style:  normal;
+  font-display: swap;
+}

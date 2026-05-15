@@ -1,0 +1,544 @@
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import {
+  DailyReportTab,
+  DeliveryItem,
+  EquipmentItem,
+  IncidentItem,
+  ObservationItem,
+  ScheduleItem,
+  SubcontractorItem,
+  TaskItem,
+} from '@/features/dailyReports/types'
+import { RootState } from '@/store'
+import DeleteConfirmModal from '@/features/dailyReports/components/DeleteConfirmModal'
+import SummaryCards, { SummaryCardData } from '@/features/dailyReports/components/SummaryCards'
+import {
+  subcontractorStore,
+  reportTaskStore,
+  reportIncidentStore,
+  reportEquipmentStore,
+  reportScheduleStore,
+  reportDeliveryStore,
+  reportObservationStore,
+  dailyReportStore,
+  DailyReportStoreInput,
+} from '@/services/datastore'
+import styles from './DailyReports.module.css'
+
+interface DailyReportWorkspaceProps {
+  /** undefined = brand-new report (create mode); string = load existing (edit mode) */
+  reportId: string | undefined
+  activeTab: DailyReportTab
+  onFooterStateChange?: (state: { isEditing: boolean; isLoading: boolean }) => void
+}
+
+type ItemKind = 'subcontractor' | 'task' | 'incident' | 'equipment' | 'schedule' | 'delivery' | 'observation'
+
+const getTodayDate = () => new Date().toISOString().split('T')[0]
+
+const createUuid = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`
+
+const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
+  reportId,
+  activeTab,
+  onFooterStateChange,
+}) => {
+  const { user } = useSelector((state: RootState) => state.auth)
+  const defaultUserId = user?.id ?? 'demo-user'
+  const isEditMode = Boolean(reportId)
+
+  // ─── Section state ─────────────────────────────────────────────────────────
+  const [subcontractors, setSubcontractors] = useState<SubcontractorItem[]>([])
+  const [tasks, setTasks] = useState<TaskItem[]>([])
+  const [incidents, setIncidents] = useState<IncidentItem[]>([])
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([])
+  const [schedule, setSchedule] = useState<ScheduleItem[]>([])
+  const [deliveries, setDeliveries] = useState<DeliveryItem[]>([])
+  const [observations, setObservations] = useState<ObservationItem[]>([])
+
+  // ─── Header / report meta ──────────────────────────────────────────────────
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId)
+  const [reportDate, setReportDate] = useState(getTodayDate())
+  const [employeeName, setEmployeeName] = useState(`${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim())
+  const [trade, setTrade] = useState('')
+  const [hoursWorked, setHoursWorked] = useState<number | undefined>(undefined)
+  const [status, setStatus] = useState('Not Started')
+  const [remarks, setRemarks] = useState('')
+
+  const [loading, setLoading] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+
+  const [itemDeleteState, setItemDeleteState] = useState<{
+    open: boolean; kind: ItemKind; itemId: string; message: string
+  }>({ open: false, kind: 'task', itemId: '', message: '' })
+
+  const workersTotal = useMemo(() => subcontractors.reduce((sum, s) => sum + s.workers, 0), [subcontractors])
+
+  // ─── On mount: load existing report data when in edit mode ─────────────────
+  useEffect(() => {
+    if (!isEditMode || !reportId) return
+
+    const load = async () => {
+      setLoading(true)
+      try {
+        const [report, subs, taskRows, incidentRows, eqRows, schedRows, delRows, obsRows] = await Promise.all([
+          dailyReportStore.get(reportId),
+          subcontractorStore.listByReportId(reportId),
+          reportTaskStore.listByReportId(reportId),
+          reportIncidentStore.listByReportId(reportId),
+          reportEquipmentStore.listByReportId(reportId),
+          reportScheduleStore.listByReportId(reportId),
+          reportDeliveryStore.listByReportId(reportId),
+          reportObservationStore.listByReportId(reportId),
+        ])
+
+        if (report) {
+          setCurrentReportId(report.reportId)
+          setReportDate(report.reportDate)
+          setEmployeeName(report.employeeName ?? '')
+          setTrade(report.trade ?? '')
+          setHoursWorked(report.hoursWorked ?? undefined)
+          setStatus(report.status ?? 'Not Started')
+          setRemarks(report.remarks ?? '')
+        }
+
+        setSubcontractors(subs.map((s) => ({ id: s.id, company: s.company, projectName: s.projectName ?? undefined, workers: s.workers })))
+        setTasks(taskRows.map((t) => ({ id: t.id, company: t.company ?? '', workersOnSite: t.workersOnSite ?? 0, task: t.task ?? '', status: (t.status as TaskItem['status']) ?? 'Not Started', comments: t.comments ?? '' })))
+        setIncidents(incidentRows.map((i) => ({ id: i.id, level: (i.level as IncidentItem['level']) ?? 'Low', title: i.title ?? '', time: i.time ?? '', details: i.details ?? '' })))
+        setEquipment(eqRows.map((e) => ({ id: e.id, name: e.name })))
+        setSchedule(schedRows.map((s) => ({ id: s.id, level: (s.level as ScheduleItem['level']) ?? 'Medium', impact: s.impact ?? '', description: s.description ?? '', impactDays: s.impactDays ?? '' })))
+        setDeliveries(delRows.map((d) => ({ id: d.id, supplier: d.supplier ?? '', material: d.material ?? '', time: d.time ?? '', received: d.received ?? false })))
+        setObservations(obsRows.map((o) => ({ id: o.id, category: o.category ?? 'Safety', author: o.author ?? '', details: o.details ?? '' })))
+      } catch (err) {
+        console.error('Failed to load report data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void load()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportId])
+
+  // Notify parent of state changes
+  useEffect(() => {
+    onFooterStateChange?.({ isEditing: isEditMode, isLoading: loading })
+  }, [isEditMode, loading, onFooterStateChange])
+
+  // ─── Ensure a DailyReport header record exists (lazy-create on first save) ──
+  const ensureReportHeader = useCallback(async (): Promise<string> => {
+    if (currentReportId) return currentReportId
+    const newId = createUuid()
+    const payload: DailyReportStoreInput = {
+      reportId: newId,
+      userId: defaultUserId,
+      reportDate,
+      employeeName,
+      trade,
+      hoursWorked,
+      status,
+      remarks,
+    }
+    await dailyReportStore.create(payload)
+    setCurrentReportId(newId)
+    if (typeof window !== 'undefined') localStorage.setItem('currentReportId', newId)
+    return newId
+  }, [currentReportId, defaultUserId, reportDate, employeeName, trade, hoursWorked, status, remarks])
+
+  // ─── Save report header metadata ──────────────────────────────────────────
+  const saveReportHeader = useCallback(async () => {
+    const id = await ensureReportHeader()
+    const payload: DailyReportStoreInput = {
+      reportId: id,
+      userId: defaultUserId,
+      reportDate,
+      employeeName,
+      trade,
+      hoursWorked,
+      status,
+      remarks,
+    }
+    await dailyReportStore.upsert(payload)
+    setSaveSuccess(true)
+    setTimeout(() => setSaveSuccess(false), 3000)
+  }, [ensureReportHeader, defaultUserId, reportDate, employeeName, trade, hoursWorked, status, remarks])
+
+  // ─── Add row helpers ───────────────────────────────────────────────────────
+  const addRow = async (kind: ItemKind) => {
+    const rId = await ensureReportHeader()
+
+    if (kind === 'subcontractor') {
+      const created = await subcontractorStore.create({ reportId: rId, company: '', projectName: '', workers: 0 })
+      setSubcontractors((prev) => [...prev, { id: created.id, company: '', projectName: undefined, workers: 0 }])
+    } else if (kind === 'task') {
+      const created = await reportTaskStore.create({ reportId: rId, company: '', workersOnSite: 0, task: '', status: 'Not Started', comments: '' })
+      setTasks((prev) => [...prev, { id: created.id, company: '', workersOnSite: 0, task: '', status: 'Not Started', comments: '' }])
+    } else if (kind === 'incident') {
+      const created = await reportIncidentStore.create({ reportId: rId, level: 'Low', title: '', time: '', details: '' })
+      setIncidents((prev) => [...prev, { id: created.id, level: 'Low', title: '', time: '', details: '' }])
+    } else if (kind === 'equipment') {
+      const created = await reportEquipmentStore.create({ reportId: rId, name: '' })
+      setEquipment((prev) => [...prev, { id: created.id, name: '' }])
+    } else if (kind === 'schedule') {
+      const created = await reportScheduleStore.create({ reportId: rId, level: 'Medium', impact: '', description: '', impactDays: '' })
+      setSchedule((prev) => [...prev, { id: created.id, level: 'Medium', impact: '', description: '', impactDays: '' }])
+    } else if (kind === 'delivery') {
+      const created = await reportDeliveryStore.create({ reportId: rId, supplier: '', material: '', time: '', received: false })
+      setDeliveries((prev) => [...prev, { id: created.id, supplier: '', material: '', time: '', received: false }])
+    } else if (kind === 'observation') {
+      const created = await reportObservationStore.create({ reportId: rId, category: 'Safety', author: '', details: '' })
+      setObservations((prev) => [...prev, { id: created.id, category: 'Safety', author: '', details: '' }])
+    }
+  }
+
+  // ─── Delete helpers ────────────────────────────────────────────────────────
+  const openDeleteModal = (kind: ItemKind, itemId: string, message: string) => {
+    setItemDeleteState({ open: true, kind, itemId, message })
+  }
+
+  const confirmDelete = async () => {
+    const { kind, itemId } = itemDeleteState
+    if (kind === 'subcontractor') { await subcontractorStore.delete(itemId); setSubcontractors((p) => p.filter((x) => x.id !== itemId)) }
+    else if (kind === 'task') { await reportTaskStore.delete(itemId); setTasks((p) => p.filter((x) => x.id !== itemId)) }
+    else if (kind === 'incident') { await reportIncidentStore.delete(itemId); setIncidents((p) => p.filter((x) => x.id !== itemId)) }
+    else if (kind === 'equipment') { await reportEquipmentStore.delete(itemId); setEquipment((p) => p.filter((x) => x.id !== itemId)) }
+    else if (kind === 'schedule') { await reportScheduleStore.delete(itemId); setSchedule((p) => p.filter((x) => x.id !== itemId)) }
+    else if (kind === 'delivery') { await reportDeliveryStore.delete(itemId); setDeliveries((p) => p.filter((x) => x.id !== itemId)) }
+    else if (kind === 'observation') { await reportObservationStore.delete(itemId); setObservations((p) => p.filter((x) => x.id !== itemId)) }
+    setItemDeleteState((prev) => ({ ...prev, open: false }))
+  }
+
+  const summaryCards: SummaryCardData[] = [
+    { label: 'TOTAL WORKERS', value: workersTotal, icon: '👥' },
+    { label: 'TOTAL HOURS', value: hoursWorked || 0, icon: '⏱️', unit: 'hrs' },
+    { label: 'WEATHER', value: 54, icon: '☁️', unit: '°F' },
+    { label: 'INCIDENTS', value: incidents.length, icon: '⚠️' },
+  ]
+
+  if (loading) {
+    return <div style={{ padding: 40, textAlign: 'center', color: '#5a7c93' }}>Loading report data...</div>
+  }
+
+  // ─── Subcontractors tab ────────────────────────────────────────────────────
+  if (activeTab === 'subcontractors') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        <h2 className={styles.sectionTitle}>Subcontractors</h2>
+        <div className={styles.card}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px 40px', gap: 12, marginBottom: 10, fontWeight: 700, color: '#2b3138' }}>
+            <div>Company</div><div>Project Name</div><div>Workers</div><div />
+          </div>
+          {subcontractors.map((item) => (
+            <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px 40px', gap: 12, marginBottom: 8 }}>
+              <input className={styles.input} value={item.company}
+                onChange={(e) => setSubcontractors((p) => p.map((r) => r.id === item.id ? { ...r, company: e.target.value } : r))}
+                onBlur={async () => { try { await subcontractorStore.update(item.id, { company: item.company, projectName: item.projectName, workers: item.workers }) } catch (err) { console.error(err) } }} />
+              <input className={styles.input} value={item.projectName || ''} placeholder="Project Name"
+                onChange={(e) => setSubcontractors((p) => p.map((r) => r.id === item.id ? { ...r, projectName: e.target.value } : r))}
+                onBlur={async () => { try { await subcontractorStore.update(item.id, { company: item.company, projectName: item.projectName, workers: item.workers }) } catch (err) { console.error(err) } }} />
+              <input className={styles.input} type="number" value={item.workers}
+                onChange={(e) => { const v = Number(e.target.value); setSubcontractors((p) => p.map((r) => r.id === item.id ? { ...r, workers: isFinite(v) ? v : 0 } : r)) }}
+                onBlur={async () => { try { await subcontractorStore.update(item.id, { company: item.company, projectName: item.projectName, workers: item.workers }) } catch (err) { console.error(err) } }} />
+              <button type="button" className={styles.iconBtn} onClick={() => openDeleteModal('subcontractor', item.id, `Delete subcontractor "${item.company}"?`)}>x</button>
+            </div>
+          ))}
+          <hr style={{ margin: '10px 0 14px', border: 0, borderTop: '1px solid #c4ccd5' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700 }}>
+            <span>Total Workers</span><span>{workersTotal}</span>
+          </div>
+        </div>
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('subcontractor')}>+ Add Subcontractor</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'subcontractor'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Tasks tab ─────────────────────────────────────────────────────────────
+  if (activeTab === 'tasks') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        {tasks.length === 0 && <p className={styles.noDataText}>No tasks yet. Click Add Task to get started.</p>}
+        {tasks.map((task) => (
+          <div key={task.id} className={styles.card} style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1 }}>
+                <input className={styles.input} value={task.company} placeholder="Company"
+                  onChange={(e) => setTasks((p) => p.map((r) => r.id === task.id ? { ...r, company: e.target.value } : r))}
+                  onBlur={async () => { try { await reportTaskStore.update(task.id, { company: task.company }) } catch (err) { console.error(err) } }} />
+                <input className={styles.input} type="number" value={task.workersOnSite} placeholder="Workers On Site"
+                  onChange={(e) => { const v = Number(e.target.value); setTasks((p) => p.map((r) => r.id === task.id ? { ...r, workersOnSite: isFinite(v) ? v : 0 } : r)) }}
+                  onBlur={async () => { try { await reportTaskStore.update(task.id, { workersOnSite: task.workersOnSite }) } catch (err) { console.error(err) } }} />
+              </div>
+              <button type="button" className={styles.iconBtn} style={{ marginLeft: 12 }} onClick={() => openDeleteModal('task', task.id, `Delete task for "${task.company}"?`)}>x</button>
+            </div>
+            <hr style={{ margin: '12px 0', border: 0, borderTop: '1px solid #c4ccd5' }} />
+            <h4 className={styles.sectionTitle} style={{ marginBottom: 6 }}>Task</h4>
+            <textarea className={styles.textarea} value={task.task}
+              onChange={(e) => setTasks((p) => p.map((r) => r.id === task.id ? { ...r, task: e.target.value } : r))}
+              onBlur={async () => { try { await reportTaskStore.update(task.id, { task: task.task }) } catch (err) { console.error(err) } }} />
+            <h4 className={styles.sectionTitle} style={{ marginTop: 14, marginBottom: 8 }}>Status</h4>
+            <div className={styles.segment}>
+              {(['Not Started', 'In Progress', 'Completed'] as const).map((opt) => (
+                <button key={opt} type="button" className={task.status === opt ? styles.segmentActive : ''}
+                  onClick={async () => { const next = tasks.map((r) => r.id === task.id ? { ...r, status: opt } : r); setTasks(next); try { await reportTaskStore.update(task.id, { status: opt }) } catch (err) { console.error(err) } }}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+            <h4 className={styles.sectionTitle} style={{ marginTop: 14, marginBottom: 8 }}>Superintendent Comments</h4>
+            <textarea className={styles.textarea} value={task.comments}
+              onChange={(e) => setTasks((p) => p.map((r) => r.id === task.id ? { ...r, comments: e.target.value } : r))}
+              onBlur={async () => { try { await reportTaskStore.update(task.id, { comments: task.comments }) } catch (err) { console.error(err) } }} />
+          </div>
+        ))}
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('task')}>+ Add Task</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'task'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Incidents tab ─────────────────────────────────────────────────────────
+  if (activeTab === 'incidents') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        {incidents.length === 0 && <p className={styles.noDataText}>No incidents logged.</p>}
+        {incidents.map((incident) => {
+          const levelClass = incident.level === 'High' ? styles.tabCardHigh : incident.level === 'Medium' ? styles.tabCardMedium : ''
+          const chipClass = incident.level === 'High' ? styles.chipHigh : incident.level === 'Medium' ? styles.chipMedium : ''
+          return (
+            <div key={incident.id} className={`${styles.tabCard} ${levelClass}`}>
+              <div className={styles.tabCardTop}>
+                <select className={`${styles.select} ${styles.chip} ${chipClass}`} value={incident.level}
+                  onChange={async (e) => { const v = e.target.value as IncidentItem['level']; setIncidents((p) => p.map((r) => r.id === incident.id ? { ...r, level: v } : r)); try { await reportIncidentStore.update(incident.id, { level: v }) } catch (err) { console.error(err) } }}>
+                  <option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option>
+                </select>
+                <input className={styles.input} value={incident.title} placeholder="Title"
+                  onChange={(e) => setIncidents((p) => p.map((r) => r.id === incident.id ? { ...r, title: e.target.value } : r))}
+                  onBlur={async () => { try { await reportIncidentStore.update(incident.id, { title: incident.title }) } catch (err) { console.error(err) } }} />
+                <span style={{ color: '#7d8389' }}>-</span>
+                <input className={styles.input} value={incident.time} placeholder="Time"
+                  onChange={(e) => setIncidents((p) => p.map((r) => r.id === incident.id ? { ...r, time: e.target.value } : r))}
+                  onBlur={async () => { try { await reportIncidentStore.update(incident.id, { time: incident.time }) } catch (err) { console.error(err) } }} />
+                <button type="button" className={styles.iconBtn} style={{ marginLeft: 'auto' }} onClick={() => openDeleteModal('incident', incident.id, `Delete incident "${incident.title}"?`)}>x</button>
+              </div>
+              <textarea className={styles.textarea} value={incident.details}
+                onChange={(e) => setIncidents((p) => p.map((r) => r.id === incident.id ? { ...r, details: e.target.value } : r))}
+                onBlur={async () => { try { await reportIncidentStore.update(incident.id, { details: incident.details }) } catch (err) { console.error(err) } }} />
+            </div>
+          )
+        })}
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('incident')}>+ Log Incident</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'incident'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Equipment tab ─────────────────────────────────────────────────────────
+  if (activeTab === 'equipment') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        <h2 className={styles.sectionTitle}>Equipment On Site</h2>
+        <div className={styles.card}>
+          {equipment.length === 0 && <p className={styles.noDataText}>No equipment added.</p>}
+          {equipment.map((item) => (
+            <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 40px', gap: 12, marginBottom: 8 }}>
+              <input className={styles.input} value={item.name} placeholder="Equipment name"
+                onChange={(e) => setEquipment((p) => p.map((r) => r.id === item.id ? { ...r, name: e.target.value } : r))}
+                onBlur={async () => { try { await reportEquipmentStore.update(item.id, { name: item.name }) } catch (err) { console.error(err) } }} />
+              <button type="button" className={styles.iconBtn} onClick={() => openDeleteModal('equipment', item.id, `Delete "${item.name}"?`)}>x</button>
+            </div>
+          ))}
+        </div>
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('equipment')}>+ Add Equipment</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'equipment'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Schedule tab ──────────────────────────────────────────────────────────
+  if (activeTab === 'schedule') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        {schedule.length === 0 && <p className={styles.noDataText}>No schedule impacts added.</p>}
+        {schedule.map((item) => {
+          const levelClass = item.level === 'Medium' ? styles.tabCardMedium : ''
+          const chipClass = item.level === 'Medium' ? styles.chipMedium : ''
+          return (
+            <div key={item.id} className={`${styles.tabCard} ${levelClass}`}>
+              <div className={styles.tabCardTop}>
+                <select className={`${styles.select} ${styles.chip} ${chipClass}`} value={item.level}
+                  onChange={async (e) => { const v = e.target.value as ScheduleItem['level']; setSchedule((p) => p.map((r) => r.id === item.id ? { ...r, level: v } : r)); try { await reportScheduleStore.update(item.id, { level: v }) } catch (err) { console.error(err) } }}>
+                  <option value="Medium">Medium</option><option value="Positive">Positive</option>
+                </select>
+                <span style={{ color: '#7d8389' }}>Impact:</span>
+                <input className={styles.input} value={item.impact} placeholder="Impact"
+                  onChange={(e) => setSchedule((p) => p.map((r) => r.id === item.id ? { ...r, impact: e.target.value } : r))}
+                  onBlur={async () => { try { await reportScheduleStore.update(item.id, { impact: item.impact }) } catch (err) { console.error(err) } }} />
+                <button type="button" className={styles.iconBtn} style={{ marginLeft: 'auto' }} onClick={() => openDeleteModal('schedule', item.id, 'Delete schedule impact?')}>x</button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <input className={styles.input} value={item.description} placeholder="Description"
+                  onChange={(e) => setSchedule((p) => p.map((r) => r.id === item.id ? { ...r, description: e.target.value } : r))}
+                  onBlur={async () => { try { await reportScheduleStore.update(item.id, { description: item.description }) } catch (err) { console.error(err) } }} />
+                <input className={styles.input} value={item.impactDays} placeholder="Impact Days"
+                  onChange={(e) => setSchedule((p) => p.map((r) => r.id === item.id ? { ...r, impactDays: e.target.value } : r))}
+                  onBlur={async () => { try { await reportScheduleStore.update(item.id, { impactDays: item.impactDays }) } catch (err) { console.error(err) } }} />
+              </div>
+            </div>
+          )
+        })}
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('schedule')}>+ Add Schedule Impact</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'schedule'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Deliveries tab ────────────────────────────────────────────────────────
+  if (activeTab === 'delivers') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        <h2 className={styles.sectionTitle}>Deliveries</h2>
+        <div className={styles.card}>
+          {deliveries.length === 0 && <p className={styles.noDataText}>No deliveries recorded.</p>}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px 80px 40px', gap: 12, marginBottom: 10, fontWeight: 700, color: '#2b3138' }}>
+            <div>Supplier</div><div>Material</div><div>Time</div><div>Received</div><div />
+          </div>
+          {deliveries.map((item) => (
+            <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px 80px 40px', gap: 12, marginBottom: 8, alignItems: 'center' }}>
+              <input className={styles.input} value={item.supplier}
+                onChange={(e) => setDeliveries((p) => p.map((r) => r.id === item.id ? { ...r, supplier: e.target.value } : r))}
+                onBlur={async () => { try { await reportDeliveryStore.update(item.id, { supplier: item.supplier }) } catch (err) { console.error(err) } }} />
+              <input className={styles.input} value={item.material}
+                onChange={(e) => setDeliveries((p) => p.map((r) => r.id === item.id ? { ...r, material: e.target.value } : r))}
+                onBlur={async () => { try { await reportDeliveryStore.update(item.id, { material: item.material }) } catch (err) { console.error(err) } }} />
+              <input className={styles.input} value={item.time}
+                onChange={(e) => setDeliveries((p) => p.map((r) => r.id === item.id ? { ...r, time: e.target.value } : r))}
+                onBlur={async () => { try { await reportDeliveryStore.update(item.id, { time: item.time }) } catch (err) { console.error(err) } }} />
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <input type="checkbox" checked={item.received} style={{ width: 22, height: 22 }}
+                  onChange={async (e) => { const v = e.target.checked; setDeliveries((p) => p.map((r) => r.id === item.id ? { ...r, received: v } : r)); try { await reportDeliveryStore.update(item.id, { received: v }) } catch (err) { console.error(err) } }} />
+              </div>
+              <button type="button" className={styles.iconBtn} onClick={() => openDeleteModal('delivery', item.id, `Delete delivery from "${item.supplier}"?`)}>x</button>
+            </div>
+          ))}
+        </div>
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('delivery')}>+ Add Delivery</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'delivery'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Observations tab ──────────────────────────────────────────────────────
+  if (activeTab === 'observations') {
+    return (
+      <>
+        <SummaryCards cards={summaryCards} />
+        {observations.length === 0 && <p className={styles.noDataText}>No observations recorded.</p>}
+        {observations.map((item) => (
+          <div key={item.id} className={styles.card} style={{ marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 40px', gap: 14, marginBottom: 14 }}>
+              <select className={styles.select} value={item.category}
+                onChange={async (e) => { const v = e.target.value; setObservations((p) => p.map((r) => r.id === item.id ? { ...r, category: v } : r)); try { await reportObservationStore.update(item.id, { category: v }) } catch (err) { console.error(err) } }}>
+                <option value="Safety">Safety</option><option value="Quality">Quality</option>
+              </select>
+              <input className={styles.input} value={item.author} placeholder="Author"
+                onChange={(e) => setObservations((p) => p.map((r) => r.id === item.id ? { ...r, author: e.target.value } : r))}
+                onBlur={async () => { try { await reportObservationStore.update(item.id, { author: item.author }) } catch (err) { console.error(err) } }} />
+              <button type="button" className={styles.iconBtn} onClick={() => openDeleteModal('observation', item.id, `Delete observation by "${item.author}"?`)}>x</button>
+            </div>
+            <textarea className={styles.textarea} value={item.details}
+              onChange={(e) => setObservations((p) => p.map((r) => r.id === item.id ? { ...r, details: e.target.value } : r))}
+              onBlur={async () => { try { await reportObservationStore.update(item.id, { details: item.details }) } catch (err) { console.error(err) } }} />
+          </div>
+        ))}
+        <div className={styles.actionRow}>
+          <button type="button" className={styles.btnNavy} onClick={() => void addRow('observation')}>+ Add Observation</button>
+        </div>
+        <DeleteConfirmModal isOpen={itemDeleteState.open && itemDeleteState.kind === 'observation'} message={itemDeleteState.message} onClose={() => setItemDeleteState((p) => ({ ...p, open: false }))} onConfirm={confirmDelete} isSubmitting={false} errorMessage={null} />
+      </>
+    )
+  }
+
+  // ─── Finalize tab ──────────────────────────────────────────────────────────
+  return (
+    <div className={styles.finalizeArea}>
+      <h2 className={styles.sectionTitle}>Finalize Report</h2>
+      <div className={styles.card}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: '#2b3138' }}>Employee Name</label>
+            <input className={styles.input} value={employeeName}
+              onChange={(e) => setEmployeeName(e.target.value)}
+              onBlur={() => void saveReportHeader()} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: '#2b3138' }}>Report Date</label>
+            <input className={styles.input} type="date" value={reportDate}
+              onChange={(e) => setReportDate(e.target.value)}
+              onBlur={() => void saveReportHeader()} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: '#2b3138' }}>Trade / Project</label>
+            <input className={styles.input} value={trade}
+              onChange={(e) => setTrade(e.target.value)}
+              onBlur={() => void saveReportHeader()} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: '#2b3138' }}>Hours Worked</label>
+            <input className={styles.input} type="number" value={hoursWorked ?? ''}
+              onChange={(e) => { const v = Number(e.target.value); setHoursWorked(isFinite(v) ? v : undefined) }}
+              onBlur={() => void saveReportHeader()} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: '#2b3138' }}>Status</label>
+            <select className={styles.select} value={status}
+              onChange={async (e) => { setStatus(e.target.value); await saveReportHeader() }}>
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: '#2b3138' }}>Remarks</label>
+            <input className={styles.input} value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              onBlur={() => void saveReportHeader()} />
+          </div>
+        </div>
+        <div style={{ marginTop: 24 }}>
+          <button type="button" className={styles.btnGreen} onClick={() => void saveReportHeader()}>
+            {isEditMode ? 'Update Report' : 'Save Report'}
+          </button>
+          {saveSuccess && <span style={{ marginLeft: 16, color: '#1f9a58', fontWeight: 600 }}>Saved successfully!</span>}
+        </div>
+        {currentReportId && (
+          <p style={{ marginTop: 16, fontSize: 12, color: '#8193a0' }}>Report ID: {currentReportId}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default DailyReportWorkspace

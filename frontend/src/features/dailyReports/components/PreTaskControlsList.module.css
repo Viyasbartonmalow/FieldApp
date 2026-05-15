@@ -1,0 +1,117 @@
+.container {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.header {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background-color: white;
+}
+
+.table thead {
+  background-color: #f5f5f5;
+}
+
+.table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+.thCompanyName {
+  width: 35%;
+}
+
+.thProjectName {
+  width: 35%;
+}
+
+.thCreatedAt {
+  width: 30%;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f0f8ff;
+}
+
+.table td {
+  padding: 12px;
+  color: #555;
+}
+
+.row {
+  cursor: pointer;
+}
+
+.tdCompanyName {
+  font-weight: 500;
+  color: #333;
+}
+
+.tdProjectName {
+  color: #555;
+}
+
+.tdCreatedAt {
+  color: #888;
+  font-size: 12px;
+}
+
+.loadingMessage {
+  padding: 16px;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.errorMessage {
+  padding: 12px 16px;
+  margin-top: 12px;
+  background-color: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.emptyMessage {
+  padding: 16px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}

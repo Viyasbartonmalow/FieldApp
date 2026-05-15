@@ -1,0 +1,294 @@
+/* ============================================================
+   Trade Specific Custom Template Creation Page
+   Figma Node: 4582-20547 "Trade Specific Custom template Creation"
+   ============================================================
+
+   Design Tokens (extracted from Figma):
+   - Page bg:        #F8FBFD  (fill_A3MGN8)
+   - Navy primary:   #00263A  (fill_07J42F)
+   - Black text:     #000000  (fill_I46OD3)
+   - Orange accent:  #E35205  (fill_WDI17V)
+   - White:          #FFFFFF  (fill_S0ZBJW)
+   - Separator:      #EAEDEF  (fill_LZKLJJ)
+   - PPE cat bg:     rgba(214,230,243,0.5) (fill_794JHE)
+   - Save Final btn: #34C759  (fill_0N3RLR)
+   - Draft btn text: #344054  (fill_5G87KL)
+   - Card shadow:    0 4px 4px rgba(0,0,0,0.1) (effect_I1Y0T8)
+
+   Typography (Figma iPad → Web scaling):
+   - Page title:         Industry Demi 600, 16px → 18px
+   - Panel header:       Industry Demi 600, 15px → 17px
+   - Section header:     URW DIN Bold 700, 12px → 14px
+   - Checkbox labels:    URW DIN Regular 400, 9px → 12px
+   - PPE category:       URW DIN Bold 700, 7px → 10px
+   ============================================================ */
+
+/* Page wrapper */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height, 67px));
+  background-color: var(--clr-bg-page, #F8FBFD);
+}
+
+/* Page title bar — Figma: Frame 427319074, bg #00263A */
+.page-title-bar {
+  background-color: var(--clr-primary, #00263A);
+  padding: 14px 28px;
+  flex-shrink: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-brand, 'Arial Black', sans-serif);
+  font-weight: var(--fw-semibold, 600);
+  font-size: 18px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-white, #FFFFFF);
+}
+
+/* Scrollable content area */
+.content {
+  flex: 1;
+  padding: 20px 28px 40px;
+  overflow-y: auto;
+  max-width: 800px;
+}
+
+/* ── Panel (outer card) — Figma: Frame 427319082, radius 10px, shadow ── */
+.panel {
+  background-color: var(--clr-white, #FFFFFF);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Panel header stripe — Figma: "Requirements" label on dark/navy bg */
+.panel-header {
+  background-color: var(--clr-primary, #00263A);
+  padding: 10px 20px;
+}
+
+.panel-header-title {
+  font-family: var(--font-brand, 'Arial Black', sans-serif);
+  font-weight: var(--fw-semibold, 600);
+  font-size: 15px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-white, #FFFFFF);
+}
+
+/* ── Inner card — Figma: white card with shadow inside panel ── */
+.inner-card {
+  background-color: var(--clr-white, #FFFFFF);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  padding: 14px 20px 18px;
+  margin: 16px;
+}
+
+/* ── Section header ── */
+.section-header {
+  margin-bottom: 12px;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+/* Icon box — Figma: white box radius 4px containing icon */
+.section-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: var(--clr-white, #FFFFFF);
+  border: 1px solid var(--clr-border, #D1D1D6);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Section title — Figma: style_N4CR2X: URW DIN Bold 700 12px → 14px web */
+.section-header-title {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-bold, 700);
+  font-size: 13px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-primary, #00263A);
+}
+
+/* Separator — Figma: Line 264, 0.5px solid #EAEDEF */
+.section-divider {
+  height: 0.5px;
+  background-color: #EAEDEF;
+  margin-top: 4px;
+}
+
+/* ── Checkbox grid — Figma: rows of checkbox items, ~4-5 per row ── */
+.checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  padding-top: 10px;
+}
+
+/* ── Checkbox item — Figma: checkbox SVG + label, gap 7px ── */
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  width: 50%;        /* 2 columns default */
+  min-width: 160px;
+  padding: 2px 4px;
+}
+
+@media (min-width: 640px) {
+  .checkbox-item {
+    width: 33.33%;   /* 3 columns on wider screens */
+  }
+}
+
+/* Hide native checkbox */
+.checkbox-native {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom checkbox box — Figma: checkbox-input SVG 16×16 */
+.checkbox-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--clr-border, #D1D1D6);
+  border-radius: 3px;
+  background-color: var(--clr-white, #FFFFFF);
+  flex-shrink: 0;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.checkbox-box--checked {
+  background-color: var(--clr-primary, #00263A);
+  border-color: var(--clr-primary, #00263A);
+}
+
+/* Checkbox label — Figma: style_XOHV6G: URW DIN Regular 400, 9px → 12px web */
+.checkbox-label {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-regular, 400);
+  font-size: 12px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: #000000;
+  user-select: none;
+}
+
+/* ── PPE category ── */
+.ppe-category {
+  margin-bottom: 14px;
+}
+
+/* PPE category label — Figma: fill_794JHE = rgba(214,230,243,0.5), URW DIN Bold 7px → 10px */
+.ppe-category-label {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: rgba(214, 230, 243, 0.5);
+  border-radius: 3px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-bold, 700);
+  font-size: 10px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-primary, #00263A);
+  margin-bottom: 6px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Navigation row — Figma: Group 427319089 (Prev) + Group 427319317 (Save) ── */
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 12px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Prev button — Figma: outlined, icon-left, URW DIN Small */
+.btn-prev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background-color: transparent;
+  border: 1px solid var(--clr-primary, #00263A);
+  border-radius: 4px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 12px;
+  font-weight: var(--fw-regular, 400);
+  color: var(--clr-primary, #00263A);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.btn-prev:hover {
+  background-color: rgba(0, 38, 58, 0.06);
+}
+
+/* Save as Draft — Figma: white bg, 1px solid #344054 border, text #344054, radius 8px */
+.btn-draft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  background-color: var(--clr-white, #FFFFFF);
+  border: 1px solid #344054;
+  border-radius: 8px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 13px;
+  font-weight: var(--fw-semibold, 600);
+  color: #344054;
+  cursor: pointer;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  transition: background-color 0.15s;
+}
+.btn-draft:hover {
+  background-color: rgba(52, 64, 84, 0.06);
+}
+
+/* Save as Final — Figma: fill_0N3RLR = #34C759, white text, radius 8px */
+.btn-final {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  background-color: #34C759;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 13px;
+  font-weight: var(--fw-semibold, 600);
+  color: var(--clr-white, #FFFFFF);
+  cursor: pointer;
+  box-shadow: 0px 1px 2px rgba(52, 199, 89, 0.4);
+  transition: background-color 0.15s;
+}
+.btn-final:hover {
+  background-color: #2ab54e;
+}

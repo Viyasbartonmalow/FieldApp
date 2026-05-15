@@ -1,0 +1,435 @@
+/* ============================================================
+   Activity & Control Measures Page
+   Figma Node: 4582-22257
+   ============================================================
+
+   Design Tokens (from Figma):
+   - Page bg:           #F8FBFD  (fill_A3MGN8)
+   - Primary navy:      #00263A  (fill_07J42F)
+   - Orange accent:     #E35205  (fill_WDI17V)
+   - White:             #FFFFFF  (fill_S0ZBJW)
+   - Card shadow:       0px 4px 4px rgba(0,0,0,0.1) (effect_I1Y0T8)
+   - Inner card shadow: 0px 4px 4px rgba(0,0,0,0.1) (effect_O87K7X)
+   - Left border:       3px solid #E35205 (strokeWeight: 0px 0px 0px 3px + fill_WDI17V)
+   - Separator:         #EAEDEF  (fill_LZKLJJ)
+   - PPE cat bg:        rgba(214,230,243,0.5) (fill_794JHE)
+   - Modal overlay:     rgba(41,41,58,0.23) (fill_NP6TA9)
+   - Checkbox label:    URW DIN Regular 400 9px → 12px
+   - Section title:     URW DIN Bold 700 12px → 14px (style_N4CR2X)
+   - Panel heading:     Industry Demi 600 15px (style_3MVRJ7)
+   - Page title:        Industry Demi 600 16px (style_BGDM2R)
+   - Modal header:      Industry Black 800 15px (style_W7916N)
+   - Input label:       URW DIN Regular 400 12px (style_J5R6OK)
+   - Input unit text:   URW DIN Regular 400 10px (style_X7ZQCD)
+   ============================================================ */
+
+/* ── Page shell ── */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height, 67px));
+  background-color: var(--clr-bg-page, #F8FBFD);
+  position: relative;
+}
+
+/* ── Page title bar — white bg, style_BGDM2R 16px ── */
+.page-title-bar {
+  background-color: var(--clr-white, #FFFFFF);
+  padding: 12px 28px 0;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--clr-border, #D1D1D6);
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-brand, 'Arial Black', sans-serif);
+  font-weight: var(--fw-semibold, 600);
+  font-size: 16px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: #000000;
+  padding-bottom: 12px;
+}
+
+/* ── Main panel — Figma: Frame 427319082, #F8FBFD bg, radius 10px, shadow ── */
+.panel {
+  margin: 20px 24px 40px;
+  background-color: var(--clr-bg-page, #F8FBFD);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Panel heading row — Figma: "Activity & Control Measures" style_3MVRJ7 #00263A */
+.panel-heading {
+  padding: 12px 22px 10px;
+  background-color: var(--clr-bg-page, #F8FBFD);
+}
+
+.panel-heading-text {
+  font-family: var(--font-brand, 'Arial Black', sans-serif);
+  font-weight: var(--fw-semibold, 600);
+  font-size: 15px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-primary, #00263A);
+}
+
+/* ── Cards container ── */
+.cards-container {
+  padding: 0 22px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Activity Card — white, radius 10px, shadow, left orange 3px border (Figma: strokeWeight 0px 0px 0px 3px) ── */
+.activity-card {
+  position: relative;
+  background-color: var(--clr-white, #FFFFFF);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  border-left: 3px solid var(--clr-accent, #E35205);
+  padding: 14px 20px 14px 18px;
+}
+
+/* Card header row — icon box + title */
+.activity-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+/* Orange icon box — Figma: fill_WDI17V = #E35205 bg, 13×15, borderRadius 4px */
+.activity-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 22px;
+  background-color: var(--clr-accent, #E35205);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.activity-icon-image {
+  width: 20px;
+  height: 22px;
+  display: block;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+/* Card title — style_N4CR2X: URW DIN Bold 700, 12px → 13px */
+.activity-title {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-bold, 700);
+  font-size: 13px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-primary, #00263A);
+}
+
+/* Separator — fill_LZKLJJ 0.5px */
+.activity-divider {
+  height: 0.5px;
+  background-color: #EAEDEF;
+  margin: 6px 0 10px;
+}
+
+/* ── Checkbox grid — Figma: rows of items, ~4 per row, gap 7px ── */
+.activity-checks {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  column-gap: 0;
+}
+
+/* ── Checkbox item ── */
+.cb-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  width: 50%;
+  padding: 2px 4px 2px 0;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .cb-item {
+    width: 33.33%;
+  }
+}
+
+@media (min-width: 900px) {
+  .cb-item {
+    width: 25%;
+  }
+}
+
+/* Hide native checkbox */
+.cb-native {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom checkbox box — Figma: 14×14, checkbox-input SVG component */
+.cb-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #BCBCBC;
+  border-radius: 3px;
+  background-color: var(--clr-white, #FFFFFF);
+  flex-shrink: 0;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+
+.cb-box--on {
+  background-color: var(--clr-primary, #00263A);
+  border-color: var(--clr-primary, #00263A);
+}
+
+/* Checkbox label — style_XOHV6G: URW DIN Regular 400 9px → 12px */
+.cb-label {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-regular, 400);
+  font-size: 11px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: #000000;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Distance input row — Figma: Group 427319069/071, style_J5R6OK + input + "ft" ── */
+.distance-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.distance-label {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-regular, 400);
+  font-size: 11px;
+  line-height: 150%;
+  color: #000000;
+  white-space: nowrap;
+}
+
+/* Input field — Figma: fill Theme/Body Background, border #CED4DA, radius 4px, padding 4px 8px, 56×23 */
+.distance-input {
+  width: 56px;
+  padding: 4px 8px;
+  background-color: var(--clr-white, #FFFFFF);
+  border: 1px solid #CED4DA;
+  border-radius: 4px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 11px;
+  color: #000000;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.distance-input:focus {
+  border-color: var(--clr-primary, #00263A);
+}
+
+/* "ft" unit — style_X7ZQCD: URW DIN Regular 400 10px */
+.distance-unit {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-regular, 400);
+  font-size: 10px;
+  line-height: 150%;
+  color: #000000;
+}
+
+/* Edit button — top right of card — Figma: ellipsis IMAGE-SVG */
+.activity-edit-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--clr-text-muted, #6C7278);
+  letter-spacing: 0.05em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background-color 0.12s;
+}
+.activity-edit-btn:hover {
+  background-color: rgba(0, 38, 58, 0.06);
+  color: var(--clr-primary, #00263A);
+}
+
+/* ── Navigation row — bottom right "Next" button ── */
+.nav-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 22px 20px;
+}
+
+/* Next button — Figma: fill_07J42F (but shown as grey fill_B1AIE0 in this view ≈ disabled state).
+   Use primary navy for active state */
+.btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  background-color: var(--clr-primary, #00263A);
+  color: var(--clr-white, #FFFFFF);
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 12px;
+  font-weight: var(--fw-regular, 400);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.btn-next:hover {
+  background-color: #003550;
+}
+
+/* ============================================================
+   Edit Modal
+   Figma: Frame 427319112 (366×382), overlay fill_NP6TA9
+   ============================================================ */
+
+/* Overlay — Figma: fill_NP6TA9 = rgba(41,41,58,0.23) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(41, 41, 58, 0.23);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal card — Figma: 366×382, white, radius 10px */
+.modal {
+  width: 100%;
+  max-width: 380px;
+  background-color: var(--clr-white, #FFFFFF);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal header — Figma: fill_07J42F = #00263A bg, white text, radius 10px 10px 0 0 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background-color: var(--clr-primary, #00263A);
+  border-radius: 10px 10px 0 0;
+}
+
+/* Modal title — style_W7916N: Industry Black 800, 15px, white */
+.modal-title {
+  font-family: var(--font-brand, 'Arial Black', sans-serif);
+  font-weight: var(--fw-black, 800);
+  font-size: 14px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: var(--clr-white, #FFFFFF);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.12s;
+}
+.modal-close:hover { color: #FFFFFF; }
+
+/* Modal body */
+.modal-body {
+  flex: 1;
+  padding: 14px 18px;
+  overflow-y: auto;
+}
+
+/* Item header — Figma: fill_794JHE = rgba(214,230,243,0.5) bg, style_N4CR2X URW DIN Bold 12px, strokes fill_IK2XVU */
+.modal-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background-color: rgba(214, 230, 243, 0.5);
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #DEE2E6;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.modal-item-label {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: var(--fw-bold, 700);
+  font-size: 12px;
+  line-height: 150%;
+  color: var(--clr-primary, #00263A);
+}
+
+/* Modal item list */
+.modal-items {
+  border: 1px solid #DEE2E6;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* In modal, checkboxes full width */
+.modal-items .cb-item {
+  width: 100%;
+}
+
+/* Modal footer */
+.modal-footer {
+  padding: 0 18px 18px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Save button — Figma: fill_07J42F bg, white text, radius 4px, style_Body/Small */
+.modal-save-btn {
+  padding: 6px 32px;
+  background-color: var(--clr-primary, #00263A);
+  color: var(--clr-white, #FFFFFF);
+  border: 1px solid var(--clr-primary, #00263A);
+  border-radius: 4px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 12px;
+  font-weight: var(--fw-semibold, 600);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.modal-save-btn:hover { background-color: #003550; }

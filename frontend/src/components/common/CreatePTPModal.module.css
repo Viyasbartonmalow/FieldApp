@@ -1,0 +1,235 @@
+/* ================================================================
+   Create New PTP Form Modal
+   Figma: Frame 427319124 / 427319112
+
+   Design tokens:
+   Overlay:            rgba(41, 41, 58, 0.23)     fill_NP6TA9
+   Header bg:          #00263A                     fill_07J42F
+   Header text:        white, Industry Black 800 15px  style_W7916N
+   Close dot:          red circle (macOS-style)    fill_975Y9D
+   Subtitle:           #666666  URW DIN Regular    fill_HPAX9Y / style_V8TGIH
+   Card bg:            white                       fill_S0ZBJW
+   Card shadow:        0px 4px 4px rgba(0,0,0,0.15) effect_EPP4V9
+   Card radius:        20px
+   Card border:        0.25px per-option color
+   Left strip:         9px wide, per-option color
+   Option title:       #111111  URW DIN Bold 700   fill_N51C7U / style_VQCRUH
+   Option desc:        #696969  URW DIN Regular    fill_F7A9BT / style_V8TGIH
+   Get Started btn:    #00263A bg, white text, radius 4px
+   ================================================================ */
+
+/* ── Overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(41, 41, 58, 0.23);
+  z-index: 600;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 16px 24px;
+  overflow-y: auto;
+}
+
+/* ── Modal card ── */
+.modal {
+  width: 100%;
+  max-width: 680px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* ── Header — Figma: #00263A bg, radius 10 10 0 0 ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background-color: #00263A;
+  border-radius: 10px 10px 0 0;
+  flex-shrink: 0;
+}
+
+/* Header title — style_W7916N: Industry Black 800, 15px, white */
+.headerTitle {
+  font-family: var(--font-brand, 'Arial Black', sans-serif);
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 150%;
+  letter-spacing: -0.019em;
+  color: #ffffff;
+}
+
+/* macOS close circle — Figma: fill_975Y9D red circle */
+.closeBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.closeDot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  color: #000000;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 0.12s;
+}
+.closeDot:hover {
+  background-color: #f0f0f0;
+}
+
+/* ── Body ── */
+.body {
+  padding: 20px 24px 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Subtitle — URW DIN Regular, #666666, layout_I44BLL */
+.subtitle {
+  margin: 0 0 16px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666666;
+}
+
+/* ── Options list — Figma: layout_5ZSWGM column gap:14px ── */
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Option card ── */
+.optionCard {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 0;
+  border: none;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  overflow: hidden;
+  min-height: 76px;
+  transition: box-shadow 0.15s;
+}
+
+.optionCard:hover {
+  box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.12);
+}
+
+/* Selected state */
+.optionCardSelected {
+  border-color: #d1d1d6;
+}
+
+/* Left color strip — 5px left border accent */
+.leftStrip {
+  width: 5px;
+  flex-shrink: 0;
+  align-self: stretch;
+  border-radius: 8px 0 0 8px;
+}
+
+/* Card content area */
+.optionContent {
+  flex: 1;
+  padding: 14px 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Option title */
+.optionTitle {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #111111;
+}
+
+/* Option description */
+.optionDesc {
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #696969;
+}
+
+/* Radio indicator */
+.radioRing {
+  flex-shrink: 0;
+  align-self: center;
+  margin-right: 16px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #C5C5C5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+
+.radioRingSelected {
+  /* border-color set inline per option accent */
+}
+
+.radioDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  /* background-color set inline per option accent */
+}
+
+/* ── Footer — Get Started button (bottom-right) ── */
+.footer {
+  padding: 14px 24px 20px;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* Get Started button — Figma: fill_07J42F #00263A, radius 4px, 122×40, icon-right */
+.getStartedBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  min-width: 122px;
+  height: 40px;
+  background-color: #00263A;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-ui, 'Arial', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  justify-content: center;
+}
+
+.getStartedBtn:hover {
+  background-color: #003550;
+}

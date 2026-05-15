@@ -1,0 +1,43 @@
+/* ============================================================
+   Layout Shell — header + main content (no sidebar)
+   ============================================================ */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--clr-bg-page, #F8FBFD);
+}
+
+/* Row below the fixed header */
+.layout-content {
+  display: flex;
+  flex: 1;
+  padding-top: var(--header-height, 67px);
+  transition: padding-left 0.28s ease;
+}
+
+.layout-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+  min-width: 0;
+}
+
+.layout--sidebar-open .layout-content {
+  padding-left: 196px;
+}
+
+.layout--sidebar-closed .layout-content {
+  padding-left: 0;
+}
+
+@media (max-width: 768px) {
+  .layout--sidebar-open .layout-content,
+  .layout--sidebar-closed .layout-content {
+    padding-left: 0;
+  }
+
+  .layout-main { padding: 16px; }
+}
+

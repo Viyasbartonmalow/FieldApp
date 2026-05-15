@@ -1,0 +1,215 @@
+type PreTaskPlanMaster
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  master_id: ID! @primaryKey
+  master_title: String!
+  master_category_name: String! @index(name: "byCategoryName", queryField: "ptpMastersByCategoryName")
+  master_name: String! @index(name: "byPTPMasterName", queryField: "ptpMastersByMasterName")
+  master_description: String!
+  icon_name: String
+  display_sequence_number: Int!
+  active_indicator: Boolean!
+  created_by_user_id: String
+  modified_by_user_id: String
+  items: [PreTaskPlanMasterItem] @hasMany(fields: ["master_id"])
+}
+
+type PreTaskPlanMasterItem
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  master_id: ID! @primaryKey(sortKeyFields: ["master_item_id"])
+  master_item_id: ID!
+  master_item_name: String!
+  master_item_type: String!
+  master_item_role_premission: [String]
+  icon_name: String
+  master_item_code: String
+  display_sequence_number: Int!
+  active_indicator: Boolean!
+  created_by_user_id: String
+  modified_by_user_id: String
+}
+
+type Hazardandmeasurescontrolinformation {
+  hazard_name: String
+  hazard_Measure: [String]
+  required_clearance_distance: String
+}
+
+type Requiredppeselection {
+  category: String
+  required_PPE: [String]
+}
+
+type Pretaskplantemplateoption {
+  required_permit: [String]
+  required_checklist: [String]
+  required_ppe: [Requiredppeselection]
+  hazards_and_measure: [Hazardandmeasurescontrolinformation]
+}
+
+type PreTaskPlanTemplate
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  template_id: ID! @primaryKey
+  template_name: String! @index(name: "byTemplateName", queryField: "ptpTemplateByTemplateName")
+  template_option: Pretaskplantemplateoption
+  template_status: String! @index(name: "byTemplateStatus", queryField: "ptpTemplateByStatus")
+  base_template: Boolean
+  active_indicator: Boolean!
+  created_by_user_id: String
+  modified_by_user_id: String
+  items: [PreTaskPlanControl] @hasMany(indexName: "byTemplate", fields: ["template_id"])
+}
+
+type Shiftsignatureinformation {
+  foreman_name: String
+  foreman_signature: String
+  signed_datetime: AWSDateTime
+  company_name: String
+  note: String
+}
+
+type Emergencyinfomation {
+  emergency_action_plan_discussion_indicator: Boolean
+  safety_professional_name: String
+  superintendent_name: String
+  muster_location: String
+  note: String
+}
+
+type Shiftendreviewinformation {
+  tools_stored_property_indicator: Boolean
+  permit_closed_indicator: Boolean
+  incident_injury_indicator: Boolean
+  incident_reported_indicator: Boolean
+  incident_description: String
+}
+
+type Reviewersignatureinformation {
+  reviewer_name: String
+  review_signature: String
+  signed_datetime: AWSDateTime
+  company_name: String
+  note: String
+}
+
+type Project
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  project_number: ID! @primaryKey
+  project_name: String! @index(name: "byProjectName", queryField: "projectsByProjectName")
+  project_code: String
+  job_number: Int
+  state: String
+  remarks: String
+  project_emergency_information: Emergencyinfomation
+  user_email_id: [String]
+  ptpControls: [PreTaskPlanControl] @hasMany(indexName: "byProjectSite", fields: ["project_number"])
+  created_by_user_id: String
+  modified_by_user_id: String
+}
+
+type PreTaskPlanControl
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  control_id: ID! @primaryKey(sortKeyFields: ["control_template_id"])
+  control_template_id: ID! @index(name: "byTemplate", queryField: "ptpByTemplate")
+  control_name: String!
+  project_number: ID! @index(name: "byProjectSite", queryField: "ptpByProjectSite")
+  control_option: Pretaskplantemplateoption
+  flagged: Boolean
+  emergency_information: Emergencyinfomation
+  shift_start_review: Reviewersignatureinformation
+  shift_start_signature: Shiftsignatureinformation
+  shift_end_review: Shiftendreviewinformation
+  shift_end_signature: Shiftsignatureinformation
+  pretask_plan_status: String! @index(name: "byStatus", queryField: "ptpByStatus")
+  copied_from_date: AWSDateTime
+  expiry_time: Int
+  created_by_user_id: String
+  modified_by_user_id: String
+  tasks: [PreTaskPlanTaskDetail] @hasMany(fields: ["control_id"])
+}
+
+type Taskinformation {
+  task: String
+  tools_and_equipment: String
+  other_tool: String
+  tool: [String]
+  equipment: [String]
+  task_hazarad: String
+  hazard_control: String
+  competent_person: String
+}
+
+type Crewsignatureinformation {
+  crew_name: String
+  crew_signature: String
+  signed_datetime: AWSDateTime
+  signin_comment: String
+  acknowledged_by: String
+  acknowledged_datetime: AWSDateTime
+}
+
+type Crewlogininformation {
+  task_type: String
+  crew_login_information: Crewsignatureinformation
+}
+
+type Pretaskplantaskinformation {
+  task_type: String
+  task_data: [Taskinformation]
+}
+
+enum SynchronizationStatus {
+  PENDING
+  SYNCED
+  DELETED
+}
+
+type PreTaskPlanTaskDetail
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  control_id: ID! @primaryKey(sortKeyFields: ["task_id"])
+  task_id: ID!
+  task_type: String! @index(name: "entityType", queryField: "ptpByEntityType")
+  project_number: ID @index(name: "byProjectNumber", queryField: "ptpTasksByProjectNumber")
+  task_information: Pretaskplantaskinformation
+  crew_login_information: Crewlogininformation
+  requirment_category: String @index(name: "byRequirementCategory", queryField: "ptpTasksByRequirementCategory")
+  requirement_selected_value: String
+  s3_key: String
+  file_name: String
+  file_size: String
+  file_synchronization_status: SynchronizationStatus
+  expiry_time: Int
+  created_by_user_id: String
+  modified_by_user_id: String
+}
+
+enum LanguagePreference {
+  ENGLISH
+  SPANISH
+}
+
+type PreTaskPlanUserProfile
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey, operations: [read] }]) {
+  user_id: String! @primaryKey(sortKeyFields: ["user_email_address"])
+  user_email_address: String!
+  first_name: String
+  last_name: String
+  preference_project: [String]
+  primary_project: String
+  user_group: String!
+  work_phone_number: String
+  email_notification_enabled: Boolean
+  sms_notification_enabled: Boolean
+  language_preference: LanguagePreference
+  company_name: String
+  created_by_user_id: String
+  modified_by_user_id: String
+}
+
+

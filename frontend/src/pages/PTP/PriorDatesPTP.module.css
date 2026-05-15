@@ -1,0 +1,320 @@
+﻿/* Prior Dates PTP - Single Page List with Modal */.page { margin-top: 67px; padding: 28px; max-width: 1200px; margin-left: auto; margin-right: auto; }.pageTitle { font-family: 'Arial Black', Arial, sans-serif; font-size: 32px; font-weight: 800; color: #00263A; margin: 0 0 28px 0; }.filtersRow { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }.searchWrap { flex: 1; min-width: 200px; position: relative; display: flex; align-items: center; }.searchIcon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }.searchInput { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #D1D1D6; border-radius: 8px; font-size: 14px; color: #1A1C1E; background: white; }.searchInput::placeholder { color: #9CA3AF; }.searchInput:focus { outline: none; border-color: #E35205; background: #FAFAFA; }.datepickerWrap { position: relative; display: flex; align-items: center; min-width: 140px; }.datepickerInput { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #D1D1D6; border-radius: 8px; font-size: 14px; color: #1A1C1E; background: white; cursor: pointer; }.datepickerInput:focus { outline: none; border-color: #E35205; }.datepickerPlaceholder { position: absolute; left: 36px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #9CA3AF; pointer-events: none; }.datepickerWrap > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }.ptpList { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }.ptpRow { display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid #D1D1D6; border-radius: 8px; background: white; cursor: pointer; transition: all 0.15s; }.ptpRow:hover { background: #FAFAFA; border-color: #E35205; }.ptpRowSelected { background: #FFF8F0; border-color: #E35205; border-width: 2px; }.ptpRowLeft { flex: 1; }.ptpNameRow { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }.ptpName { font-size: 16px; font-weight: 600; color: #4D81E7; margin: 0; text-decoration: underline; cursor: pointer; }.eyeBtn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #4D81E7; padding: 0; border-radius: 6px; }.eyeBtn:hover { background: rgba(77, 129, 231, 0.1); }.ptpMeta { font-size: 13px; color: #6C7278; margin: 0; line-height: 1.4; }.ptpMeta strong { font-weight: 600; color: #1A1C1E; }.ptpMetaSep { margin: 0 6px; color: #D1D1D6; }.radioCircle { width: 20px; height: 20px; border: 2px solid #D1D1D6; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }.radioCircleSelected { border-color: #E35205; background: #FFF8F0; }.radioDot { width: 8px; height: 8px; background: #E35205; border-radius: 50%; }.emptyMsg { text-align: center; font-size: 14px; color: #9CA3AF; padding: 40px 20px; margin: 0; }.createBtnRow { display: flex; justify-content: flex-end; gap: 12px; }.createBtn { padding: 12px 24px; background: #00263A; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; color: white; cursor: pointer; }.createBtn:hover:not(:disabled) { background: #001A2E; box-shadow: 0 2px 8px rgba(0, 38, 58, 0.15); }.createBtn:disabled { opacity: 0.5; cursor: not-allowed; }.modalOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }.viewModal { background: white; border-radius: 12px; width: 100%; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }.viewModalHeader { background: #00263A; padding: 20px 24px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; }.viewModalTitle { font-size: 18px; font-weight: 600; color: white; margin: 0; }.viewModalClose { width: 32px; height: 32px; border: none; background: rgba(255, 255, 255, 0.2); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; padding: 0; }.viewModalClose:hover { background: rgba(255, 255, 255, 0.3); }.viewModalBody { flex: 1; overflow-y: auto; padding: 24px; }
+
+.viewModalFooter { padding: 20px 24px; border-top: 1px solid #E5E7EB; display: flex; gap: 12px; justify-content: flex-end; background: #FAFAFA; border-radius: 0 0 12px 12px; }
+
+.viewSection { margin-bottom: 32px; }.viewSectionTitle { font-family: 'Arial Black', Arial, sans-serif; font-size: 16px; font-weight: 800; color: #00263A; margin: 0 0 16px 0; }.viewTaskCard { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; margin-bottom: 12px; }.viewTaskLabel { font-size: 13px; font-weight: 600; color: #4D81E7; margin: 0 0 4px 0; text-transform: uppercase; }.viewTaskDesc { font-size: 14px; font-weight: 600; color: #1A1C1E; margin: 0 0 12px 0; }.viewFieldLabel { font-size: 12px; font-weight: 600; color: #6C7278; margin: 12px 0 4px 0; text-transform: uppercase; }.viewFieldValue { font-size: 13px; color: #1A1C1E; margin: 0 0 8px 0; line-height: 1.5; white-space: pre-wrap; }.viewControlLine { font-size: 13px; color: #1A1C1E; margin: 6px 0; }.viewActivityCard { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; margin-bottom: 12px; }.viewActivityHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }.viewActivityDot { width: 12px; height: 12px; background: #E35205; border-radius: 50%; flex-shrink: 0; }.viewActivityCategory { font-size: 14px; font-weight: 600; color: #1A1C1E; }.viewActivityExtra { font-size: 12px; color: #6C7278; display: flex; align-items: center; gap: 6px; margin-left: auto; }.viewActivityInput { width: 40px; height: 24px; border: 1px solid #D1D1D6; border-radius: 4px; background: white; }.viewCheckGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }.viewCheckRow { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }.viewCheckRow input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: #E35205; }.viewCheckRow span { font-size: 13px; color: #1A1C1E; }.viewPPECategory { font-size: 12px; font-weight: 600; color: #6C7278; margin: 8px 0 12px 0; text-transform: uppercase; }/* ── Inline date picker ── */
+.inlineDateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.inlineDateIcon {
+  flex-shrink: 0;
+  color: #6C7278;
+}
+
+.inlineDateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #D1D1D6;
+  border-radius: 8px;
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1A1C1E;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.inlineDateBtn:hover { border-color: #E35205; }
+
+/* Mini calendar dropdown */
+.miniCalDrop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 500;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  padding: 8px;
+  width: 155px;
+}
+
+.miniCalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.miniCalHeader button {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #E5E7EB;
+  background: white;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #1A1C1E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.miniCalHeader button:hover { border-color: #00263A; color: #00263A; }
+
+.miniCalHeader span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1A1C1E;
+}
+
+.miniCalGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.miniCalDayHdr {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: #9CA3AF;
+  padding: 2px 0;
+}
+
+.miniCalDay {
+  width: 100%;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  color: #1A1C1E;
+  padding: 0;
+  transition: all 0.12s;
+}
+.miniCalDay:not(:disabled):hover { background: #E8EDF2; color: #00263A; }
+.miniCalDay:disabled { color: #D1D1D6; cursor: default; }
+.miniCalDayEmpty { background: transparent !important; cursor: default !important; }
+.miniCalDaySelected { background: #00263A !important; color: white !important; font-weight: 600; }
+
+/* ═════════════════════════════════════════════════════════
+   2-STEP WORKFLOW STYLES
+═════════════════════════════════════════════════════════ */
+
+.stepIndicator {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.stepText {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6C7278;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stepTitle {
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #00263A;
+  margin: 0;
+}
+
+.stepSection {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stepDescription {
+  font-size: 14px;
+  color: #6C7278;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─ Calendar ─ */
+.calendarWrap {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.calendarHeader button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #E5E7EB;
+  background: white;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #1A1C1E;
+  transition: all 0.15s;
+}
+
+.calendarHeader button:hover {
+  background: #F9FAFB;
+  border-color: #E35205;
+  color: #E35205;
+}
+
+.calendarMonth {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1A1C1E;
+  min-width: 140px;
+  text-align: center;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendarDayHeader {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6C7278;
+  padding: 8px 0;
+  text-transform: uppercase;
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  border: 1px solid #E5E7EB;
+  background: white;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #1A1C1E;
+  font-weight: 500;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendarDay:not(:disabled):hover {
+  background: #F9FAFB;
+  border-color: #E35205;
+  color: #E35205;
+}
+
+.calendarDay:disabled {
+  color: #D1D1D6;
+  background: #FAFAFA;
+  cursor: not-allowed;
+}
+
+.calendarDayEmpty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.calendarDaySelected {
+  background: #E35205;
+  color: white;
+  border-color: #E35205;
+  font-weight: 600;
+}
+
+/* ─ Step Footer ─ */
+.stepFooter {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #E5E7EB;
+  margin-top: 28px;
+}
+
+.btnOutlined {
+  padding: 12px 28px;
+  border: 1px solid #D1D1D6;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1C1E;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnOutlined:hover {
+  background: #F9FAFB;
+  border-color: #E35205;
+  color: #E35205;
+}
+
+.btnPrimary {
+  padding: 12px 28px;
+  border: none;
+  background: #00263A;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #001A2E;
+  box-shadow: 0 4px 12px rgba(0, 38, 58, 0.2);
+}
+
+.btnDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #D1D1D6;
+}
+
+.btnDisabled:hover {
+  background: #D1D1D6;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .page { padding: 16px; }
+  .pageTitle { font-size: 24px; }
+  .filtersRow { flex-direction: column; }
+  .searchWrap, .datepickerWrap { min-width: 100%; }
+  .viewModal { max-width: calc(100vw - 32px); max-height: calc(100vh - 40px); }
+  .ptpRow { flex-direction: column; align-items: flex-start; }
+  .radioCircle { margin-top: 12px; }
+  .stepTitle { font-size: 22px; }
+  .calendarWrap { max-width: 100%; }
+  .stepFooter { flex-direction: column; }
+  .btnOutlined, .btnPrimary { width: 100%; }
+}
