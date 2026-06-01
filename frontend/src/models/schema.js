@@ -783,6 +783,14 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "attachmentKeys": {
+                    "name": "attachmentKeys",
+                    "isArray": true,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -2439,5 +2447,5 @@ export const schema = {
         }
     },
     "codegenVersion": "3.4.4",
-    "version": "d3d8352bd4941b97ee677f721f49d972"
+    "version": "ef2df73906f6620bba0f2cae1e3005b8"
 };

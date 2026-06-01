@@ -25,8 +25,6 @@ import {
   dailyReportStore,
   DailyReportStoreInput,
 } from '@/services/datastore'
-import projectAppsyncService from '@/services/projectAppsync.service'
-import pretaskControlService from '@/services/pretaskControl.service'
 import styles from './DailyReports.module.css'
 
 type AddModalDraft =
@@ -88,55 +86,6 @@ const createUuid = () =>
     ? crypto.randomUUID()
     : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`
 
-const autoSubcontractorStorageKey = (reportId: string) =>
-  `daily-report:auto-subcontractor-ids:${reportId}`
-
-const manualSubcontractorStorageKey = (reportId: string) =>
-  `daily-report:manual-subcontractor-ids:${reportId}`
-
-const readAutoSubcontractorIds = (reportId: string): Set<string> => {
-  if (typeof window === 'undefined') return new Set()
-  try {
-    const raw = window.localStorage.getItem(autoSubcontractorStorageKey(reportId))
-    if (!raw) return new Set()
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return new Set()
-    return new Set(parsed.filter((v): v is string => typeof v === 'string' && v.length > 0))
-  } catch {
-    return new Set()
-  }
-}
-
-const writeAutoSubcontractorIds = (reportId: string, ids: Set<string>) => {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(autoSubcontractorStorageKey(reportId), JSON.stringify(Array.from(ids)))
-}
-
-const readManualSubcontractorIds = (reportId: string): Set<string> => {
-  if (typeof window === 'undefined') return new Set()
-  try {
-    const raw = window.localStorage.getItem(manualSubcontractorStorageKey(reportId))
-    if (!raw) return new Set()
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return new Set()
-    return new Set(parsed.filter((v): v is string => typeof v === 'string' && v.length > 0))
-  } catch {
-    return new Set()
-  }
-}
-
-const writeManualSubcontractorIds = (reportId: string, ids: Set<string>) => {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(manualSubcontractorStorageKey(reportId), JSON.stringify(Array.from(ids)))
-}
-
-// @ts-ignore - Function not currently used but kept for potential future use
-const subcontractorSignature = (company: string, projectName: string | undefined, workers: number) =>
-  `${company.trim().toLowerCase()}|${(projectName ?? '').trim().toLowerCase()}|${workers}`
-
-const subcontractorIdentityKey = (company: string, projectName: string | undefined) =>
-  `${company.trim().toLowerCase()}|${(projectName ?? '').trim().toLowerCase()}`
-
 const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
   reportId,
   activeTab,
@@ -162,9 +111,6 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
   const [deliveries, setDeliveries] = useState<DeliveryItem[]>([])
   const [observations, setObservations] = useState<ObservationItem[]>([])
 
-  // ─── PreTaskControl data for permits ───────────────────────────────────────
-  const [preTaskControls, setPreTaskControls] = useState<{ [company: string]: string[] }>({})
-
   // ─── Header / report meta ──────────────────────────────────────────────────
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(reportId)
   const [reportDate, setReportDate] = useState(getTodayDate())
@@ -177,7 +123,6 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
   const [remarks, setRemarks] = useState('')
 
   const [loading, setLoading] = useState(false)
-  const [isPrefillingSubcontractors, setIsPrefillingSubcontractors] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -193,7 +138,6 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
   const [observationFiles, setObservationFiles] = useState<File[]>([])
   const galleryInputRef = useRef<HTMLInputElement | null>(null)
   const cameraInputRef = useRef<HTMLInputElement | null>(null)
-  const prefillRequestKeyRef = useRef<string | null>(null)
 
   const observationPreviews = useMemo(() => {
     return observationFiles.map((file) => ({
@@ -372,24 +316,12 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
           setRemarks(report.remarks ?? '')
         }
 
-        const resolvedReportId = report?.reportId ?? reportId
-        const autoIds = resolvedReportId ? readAutoSubcontractorIds(resolvedReportId) : new Set<string>()
-        const manualIds = resolvedReportId ? readManualSubcontractorIds(resolvedReportId) : new Set<string>()
-
-        if (resolvedReportId && autoIds.size === 0 && subs.length > 0) {
-          subs.forEach((s) => {
-            if (!manualIds.has(s.id)) autoIds.add(s.id)
-          })
-          writeAutoSubcontractorIds(resolvedReportId, autoIds)
-        }
-
         setSubcontractors(
           subs.map((s) => ({
             id: s.id,
             company: s.company,
             projectName: s.projectName ?? undefined,
             workers: s.workers,
-            isAutoPopulated: autoIds.has(s.id),
           }))
         )
         setTasks(
@@ -432,14 +364,15 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
         )
         const mappedObservations = await Promise.all(
           obsRows.map(async (o) => {
-            const attachmentKeys = ((o as any).attachmentKeys ?? []).filter(
-              (key: any): key is string => Boolean(key && key.length > 0)
+            const attachmentKeys = (o.attachmentKeys ?? []).filter(
+              (key): key is string => Boolean(key && key.length > 0)
             )
             const resolvedAttachments = (
               await Promise.all(
-                attachmentKeys.map((key: string) => reportObservationStore.resolveAttachmentUrl(key))
+                attachmentKeys.map((key) => reportObservationStore.resolveAttachmentUrl(key))
               )
             ).filter(Boolean)
+
             return {
               id: o.id,
               category: o.category ?? 'Safety',
@@ -461,186 +394,6 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId])
-
-  // Auto-populate subcontractor rows from legacy PreTaskPlanControl table
-  // using selected project name (trade) and selected report date.
-  useEffect(() => {
-    if (!currentReportId || !trade || !reportDate) return
-
-    const requestKey = `${currentReportId}:${trade}:${reportDate}`
-    if (prefillRequestKeyRef.current === requestKey) return
-    prefillRequestKeyRef.current = requestKey
-
-    const prefillFromLegacyControls = async () => {
-      setIsPrefillingSubcontractors(true)
-      try {
-        const rows = await projectAppsyncService.getPretaskSubcontractorPrefill(trade, reportDate)
-        if (!rows.length) return
-
-        const legacySignatures = new Set(
-          rows.map((row) => subcontractorIdentityKey(row.companyName, row.projectName))
-        )
-
-        const autoIds = readAutoSubcontractorIds(currentReportId)
-        const rowsToCreate: SubcontractorItem[] = []
-        const rowsToUpdate: SubcontractorItem[] = []
-
-        // Mark already-saved rows as auto-populated when they correspond to legacy rows.
-        setSubcontractors((prev) => {
-          const next = [...prev]
-          const buckets = new Map<string, number[]>()
-          next.forEach((item, index) => {
-            const key = subcontractorIdentityKey(item.company, item.projectName)
-            const list = buckets.get(key) ?? []
-            list.push(index)
-            buckets.set(key, list)
-          })
-
-          rows.forEach((row) => {
-            const company = row.companyName.trim()
-            const projectName = row.projectName.trim()
-            const workers = row.workerCount ?? 0
-            const key = subcontractorIdentityKey(company, projectName)
-            const available = buckets.get(key) ?? []
-
-            if (available.length > 0) {
-              const matchedIndex = available.shift() as number
-              const existing = next[matchedIndex]
-              let changed = false
-
-              if (!existing.isAutoPopulated) {
-                next[matchedIndex] = { ...existing, isAutoPopulated: true }
-                changed = true
-              }
-
-              if (next[matchedIndex].workers !== workers) {
-                next[matchedIndex] = { ...next[matchedIndex], workers }
-                changed = true
-                rowsToUpdate.push(next[matchedIndex])
-              }
-
-              if (changed) {
-                autoIds.add(next[matchedIndex].id)
-              } else {
-                autoIds.add(existing.id)
-              }
-              return
-            }
-
-            const newRow: SubcontractorItem = {
-              id: createUuid(),
-              company,
-              projectName,
-              workers,
-              isAutoPopulated: true,
-            }
-            next.push(newRow)
-            rowsToCreate.push(newRow)
-            autoIds.add(newRow.id)
-          })
-
-          // Also ensure any existing row that maps to legacy identity is read-only.
-          next.forEach((item, index) => {
-            if (!legacySignatures.has(subcontractorIdentityKey(item.company, item.projectName))) return
-            if (!item.isAutoPopulated) {
-              next[index] = { ...item, isAutoPopulated: true }
-            }
-            autoIds.add(next[index].id)
-          })
-
-          writeAutoSubcontractorIds(currentReportId, autoIds)
-          return next
-        })
-
-        // Persist created rows and worker updates.
-        for (const row of rowsToCreate) {
-          try {
-            await subcontractorStore.create({
-              id: row.id,
-              reportId: currentReportId,
-              company: row.company,
-              projectName: row.projectName,
-              workers: row.workers,
-            })
-          } catch (persistErr) {
-            console.error('Failed to persist prefilled subcontractor row:', persistErr)
-          }
-        }
-
-        for (const row of rowsToUpdate) {
-          try {
-            await subcontractorStore.update(row.id, {
-              company: row.company,
-              projectName: row.projectName,
-              workers: row.workers,
-            })
-          } catch (persistErr) {
-            console.error('Failed to persist updated subcontractor worker count:', persistErr)
-          }
-        }
-      } catch (err) {
-        console.error('Failed to prefill subcontractors from legacy controls:', err)
-      } finally {
-        setIsPrefillingSubcontractors(false)
-      }
-    }
-
-    void prefillFromLegacyControls()
-  }, [currentReportId, reportDate, trade])
-
-  // Fetch PreTaskControl data to populate permits for companies
-  useEffect(() => {
-    if (!reportDate || subcontractors.length === 0) {
-      setPreTaskControls({})
-      return
-    }
-
-    const fetchControlsForCompanies = async () => {
-      try {
-        // Get unique companies from subcontractors
-        const companies = new Set(subcontractors.map((s) => s.company))
-        const permitsByCompany: { [company: string]: string[] } = {}
-
-        // For each company, try to fetch PreTaskControl data
-        for (const company of companies) {
-          try {
-            const controls = await pretaskControlService.fetchPreTaskControls(company, reportDate)
-            const permits: string[] = []
-
-            controls.forEach((control) => {
-              const controlOption = control.control_option?.trim()
-              if (controlOption && !permits.includes(controlOption)) {
-                permits.push(controlOption)
-              }
-            })
-
-            if (permits.length > 0) {
-              permitsByCompany[company] = permits
-            }
-          } catch (err) {
-            console.warn(`Failed to fetch controls for company ${company}:`, err)
-          }
-        }
-
-        setPreTaskControls(permitsByCompany)
-      } catch (err) {
-        console.error('Failed to fetch PreTaskControl data:', err)
-        setPreTaskControls({})
-      }
-    }
-
-    void fetchControlsForCompanies()
-  }, [reportDate, subcontractors])
-
-  // Update task permits whenever preTaskControls change
-  useEffect(() => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => ({
-        ...task,
-        permits: preTaskControls[task.company] || [],
-      }))
-    )
-  }, [preTaskControls])
 
   // Notify parent of state changes
   useEffect(() => {
@@ -721,16 +474,6 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
     if (kind === 'subcontractor') {
       await subcontractorStore.delete(itemId)
       setSubcontractors((p) => p.filter((x) => x.id !== itemId))
-      if (currentReportId) {
-        const autoIds = readAutoSubcontractorIds(currentReportId)
-        if (autoIds.delete(itemId)) {
-          writeAutoSubcontractorIds(currentReportId, autoIds)
-        }
-        const manualIds = readManualSubcontractorIds(currentReportId)
-        if (manualIds.delete(itemId)) {
-          writeManualSubcontractorIds(currentReportId, manualIds)
-        }
-      }
     } else if (kind === 'task') {
       await reportTaskStore.delete(itemId)
       setTasks((p) => p.filter((x) => x.id !== itemId))
@@ -760,18 +503,7 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
   // ─── Add via modal ─────────────────────────────────────────────────────────
   const openAddModal = (kind: Exclude<AddModalDraft, null>['kind'], defaults?: Partial<Exclude<AddModalDraft, null>>) => {
     setObservationFiles([])
-    if (kind === 'subcontractor') {
-      const firstExisting = subcontractors[0]
-      const fallbackCompany = 'Atlas electrical'
-      const fallbackProjectName = 'Job/Task_1'
-      const fallbackWorkers = 5
-      setAddDraft({
-        kind,
-        company: (defaults as { company?: string })?.company ?? firstExisting?.company ?? fallbackCompany,
-        projectName: (defaults as { projectName?: string })?.projectName ?? fallbackProjectName,
-        workers: (defaults as { workers?: number })?.workers ?? fallbackWorkers,
-      })
-    }
+    if (kind === 'subcontractor') setAddDraft({ kind, company: '', projectName: '', workers: 0 })
     else if (kind === 'task') setAddDraft({ kind, company: (defaults as {company?:string})?.company ?? '', workersOnSite: 0, task: '', status: 'Not Started', comments: '' })
     else if (kind === 'incident') setAddDraft({ kind, level: 'Low', title: '', time: getCurrentTimeLabel(), details: '' })
     else if (kind === 'equipment') setAddDraft({ kind, name: '' })
@@ -822,16 +554,7 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
     const rId = await ensureReportHeader()
     if (addDraft.kind === 'subcontractor') {
       const created = await subcontractorStore.create({ reportId: rId, company: addDraft.company, projectName: addDraft.projectName, workers: addDraft.workers })
-      const manualIds = readManualSubcontractorIds(rId)
-      manualIds.add(created.id)
-      writeManualSubcontractorIds(rId, manualIds)
-
-      const autoIds = readAutoSubcontractorIds(rId)
-      if (autoIds.delete(created.id)) {
-        writeAutoSubcontractorIds(rId, autoIds)
-      }
-
-      setSubcontractors((prev) => [...prev, { id: created.id, company: addDraft.company, projectName: addDraft.projectName, workers: addDraft.workers, isAutoPopulated: false }])
+      setSubcontractors((prev) => [...prev, { id: created.id, company: addDraft.company, projectName: addDraft.projectName, workers: addDraft.workers }])
     } else if (addDraft.kind === 'task') {
       const created = await reportTaskStore.create({ reportId: rId, company: addDraft.company, workersOnSite: addDraft.workersOnSite, task: addDraft.task, status: addDraft.status, comments: addDraft.comments })
       setTasks((prev) => [...prev, { id: created.id, company: addDraft.company, workersOnSite: addDraft.workersOnSite, task: addDraft.task, status: addDraft.status as TaskItem['status'], comments: addDraft.comments }])
@@ -891,22 +614,6 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
       delivery: 'Add Delivery',
       observation: 'Add Observation',
     }
-    const companyOptions = Array.from(
-      new Set(subcontractors.map((item) => item.company?.trim()).filter((value): value is string => Boolean(value)))
-    )
-    const projectNameOptions = Array.from(
-      new Set(subcontractors.map((item) => item.projectName?.trim()).filter((value): value is string => Boolean(value)))
-    )
-
-    if (addDraft.kind === 'subcontractor') {
-      if (addDraft.company && !companyOptions.includes(addDraft.company)) {
-        companyOptions.unshift(addDraft.company)
-      }
-      if (addDraft.projectName && !projectNameOptions.includes(addDraft.projectName)) {
-        projectNameOptions.unshift(addDraft.projectName)
-      }
-    }
-
     return (
       <Modal
         isOpen
@@ -916,70 +623,57 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
         submitText="Save"
         showCancel={false}
         width="sm"
-        variant={addDraft.kind === 'task' ? 'task-add' : addDraft.kind === 'subcontractor' ? 'subcontractor-add' : 'default'}
       >
-        <div className={`${styles.addModalForm} ${addDraft.kind === 'task' ? styles.addTaskForm : ''} ${addDraft.kind === 'subcontractor' ? styles.addSubcontractorForm : ''}`}>
+        <div className={styles.addModalForm}>
           {addDraft.kind === 'subcontractor' && (
             <>
               <label className={styles.addModalField}>
                 <span>Company</span>
-                <select
-                  className={`${styles.select} ${styles.subcontractorSelectLook}`}
-                  value={addDraft.company}
-                  onChange={(e) => setAddDraft({ ...addDraft, company: e.target.value })}
-                >
-                  <option value="">Please Select</option>
-                  {companyOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                <input className={styles.input} placeholder="Enter Input" value={addDraft.company}
+                  onChange={(e) => setAddDraft({ ...addDraft, company: e.target.value })} />
               </label>
               <label className={styles.addModalField}>
                 <span>Project Name</span>
-                <select
-                  className={`${styles.select} ${styles.subcontractorSelectLook}`}
-                  value={addDraft.projectName}
-                  onChange={(e) => setAddDraft({ ...addDraft, projectName: e.target.value })}
-                >
-                  <option value="">Please Select</option>
-                  {projectNameOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                <input className={styles.input} placeholder="Enter Input" value={addDraft.projectName}
+                  onChange={(e) => setAddDraft({ ...addDraft, projectName: e.target.value })} />
               </label>
               <label className={styles.addModalField}>
                 <span>Workers</span>
-                <input className={styles.input} type="number" value={addDraft.workers || ''}
+                <input className={styles.input} type="number" placeholder="Enter Input" value={addDraft.workers || ''}
                   onChange={(e) => setAddDraft({ ...addDraft, workers: Number(e.target.value) || 0 })} />
               </label>
             </>
           )}
           {addDraft.kind === 'task' && (
             <>
-              <p className={styles.taskModalProjectText}>Project - {addDraft.company || 'N/A'}</p>
+              <label className={styles.addModalField}>
+                <span>Company</span>
+                <input className={styles.input} placeholder="Enter Input" value={addDraft.company}
+                  onChange={(e) => setAddDraft({ ...addDraft, company: e.target.value })} />
+              </label>
+              <label className={styles.addModalField}>
+                <span>Workers On Site</span>
+                <input className={styles.input} type="number" placeholder="Enter Input" value={addDraft.workersOnSite || ''}
+                  onChange={(e) => setAddDraft({ ...addDraft, workersOnSite: Number(e.target.value) || 0 })} />
+              </label>
               <label className={styles.addModalField}>
                 <span>Task</span>
-                <input className={styles.input} placeholder="Enter task" value={addDraft.task}
+                <input className={styles.input} placeholder="Enter Input" value={addDraft.task}
                   onChange={(e) => setAddDraft({ ...addDraft, task: e.target.value })} />
               </label>
               <label className={styles.addModalField}>
                 <span>Status</span>
                 <select className={styles.select} value={addDraft.status}
                   onChange={(e) => setAddDraft({ ...addDraft, status: e.target.value })}>
-                  <option value="Not Started">Not started</option>
-                  <option value="In Progress">In progress</option>
-                  <option value="Completed">Completed</option>
+                  <option>Not Started</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
                 </select>
               </label>
               <label className={styles.addModalField}>
-                <span>Superintendent comments</span>
-                <textarea className={`${styles.textarea} ${styles.taskModalComments}`} placeholder="Enter your comments here.." maxLength={1000} value={addDraft.comments}
+                <span>Comments</span>
+                <textarea className={styles.textarea} placeholder="Enter Input" value={addDraft.comments}
                   onChange={(e) => setAddDraft({ ...addDraft, comments: e.target.value })} />
-                <div className={styles.taskModalCounter}>{addDraft.comments.length}/1000</div>
               </label>
             </>
           )}
@@ -1243,37 +937,17 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
     )
   }
 
-  const totalHours = workersTotal * 8
-
-  const WorkersSummaryIcon = () => (
-    <img src="/images/total-workers-exact.png" alt="" aria-hidden="true" />
-  )
-
-  const HoursSummaryIcon = () => (
-    <img src="/images/total-hours-exact.png" alt="" aria-hidden="true" />
-  )
-
-  const WeatherSummaryIcon = () => (
-    <svg viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M96 320c-53 0-96-43-96-96 0-42.5 27.6-78.6 65.9-91.2-1.3-6.7-1.9-13.7-1.9-20.8 0-61.9 50.1-112 112-112 43.1 0 80.5 24.3 99.2 60 14.7-17.1 36.5-28 60.8-28 44.2 0 80 35.8 80 80 0 5.5-.6 10.8-1.6 16 .5 0 1.1 0 1.6 0 53 0 96 43 96 96s-43 96-96 96L96 320zm1.6 68.2c1.1-2.5 3.6-4.2 6.4-4.2s5.3 1.6 6.4 4.2l30.2 68.2c2.2 5.1 3.4 10.5 3.4 16 0 21.9-18.1 39.6-40 39.6s-40-17.7-40-39.6c0-5.5 1.2-11 3.4-16l30.2-68.2zm152 0c1.1-2.5 3.6-4.2 6.4-4.2s5.3 1.6 6.4 4.2l30.2 68.2c2.2 5.1 3.4 10.5 3.4 16 0 21.9-18.1 39.6-40 39.6s-40-17.7-40-39.6c0-5.5 1.2-11 3.4-16l30.2-68.2zm121.8 68.2l30.2-68.2c1.1-2.5 3.6-4.2 6.4-4.2s5.3 1.6 6.4 4.2l30.2 68.2c2.2 5.1 3.4 10.5 3.4 16 0 21.9-18.1 39.6-40 39.6s-40-17.7-40-39.6c0-5.5 1.2-11 3.4-16z" />
-    </svg>
-  )
-
-  const IncidentsSummaryIcon = () => (
-    <img src="/images/incidents-exact.svg" alt="" aria-hidden="true" />
-  )
-
   const summaryCards: SummaryCardData[] = [
-    { label: 'TOTAL WORKERS', value: workersTotal, icon: <WorkersSummaryIcon /> },
-    { label: 'TOTAL HOURS', value: totalHours, icon: <HoursSummaryIcon /> },
-    { label: 'WEATHER', value: '54°F', icon: <WeatherSummaryIcon /> },
-    { label: 'INCIDENTS', value: incidents.length, icon: <IncidentsSummaryIcon /> },
+    { label: 'TOTAL WORKERS', value: workersTotal, icon: '👥' },
+    { label: 'TOTAL HOURS', value: hoursWorked || 0, icon: '⏱️', unit: 'hrs' },
+    { label: 'WEATHER', value: 54, icon: '☁️', unit: '°F' },
+    { label: 'INCIDENTS', value: incidents.length, icon: '⚠️' },
   ]
 
   useEffect(() => {
     onSummaryChange?.(summaryCards)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workersTotal, incidents.length])
+  }, [workersTotal, hoursWorked, incidents.length])
 
   const handleGenerateReportPreview = async () => {
     const resolvedReportId = await saveReportHeader()
@@ -1486,15 +1160,9 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
         <div className={styles.card}>
           <div className={styles.subcontractorGridHeader}>
             <div>Company</div>
-            <div>Job/Task</div>
+            <div>Project Name</div>
             <div>Workers</div>
           </div>
-          {isPrefillingSubcontractors && subcontractors.length === 0 && (
-            <div className={styles.subcontractorStatus}>Loading subcontractors...</div>
-          )}
-          {!isPrefillingSubcontractors && subcontractors.length === 0 && (
-            <div className={styles.subcontractorStatus}>No subcontractor data available.</div>
-          )}
           {subcontractors.map((item) => (
             <div key={item.id} className={styles.subcontractorRow}>
               <input
@@ -1550,34 +1218,30 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
                   onChange={() => undefined}
                 />
                 <div className={styles.subcontractorRowActions}>
-                  {!item.isAutoPopulated && (
-                    <>
-                      <button
-                        type="button"
-                        className={styles.subcontractorIconBtn}
-                        title="Edit"
-                        aria-label="Edit subcontractor"
-                        onClick={() => openEditModal({ kind: 'subcontractor', ...item })}
-                      >
-                        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                          <path d="M15.502 1.94a.5.5 0 0 1 0 .706l-1 1a.5.5 0 0 1-.707 0L12.354 2.2l1-1a.5.5 0 0 1 .707 0l1.44 1.44z" />
-                          <path d="M11.854 2.7 2.5 12.05V14h1.95l9.354-9.354-1.95-1.95z" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.subcontractorIconBtn} ${styles.subcontractorIconBtnDelete}`}
-                        onClick={() => openDeleteModal('subcontractor', item.id, `Delete subcontractor "${item.company}"?`)}
-                        title="Delete"
-                        aria-label="Delete subcontractor"
-                      >
-                        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5.5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6zm2 .5a.5.5 0 0 1 1 0v6a.5.5 0 0 1-1 0V6z" />
-                          <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 1 1 0-2H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4 4v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4H4z" />
-                        </svg>
-                      </button>
-                    </>
-                  )}
+                  <button
+                    type="button"
+                    className={styles.subcontractorIconBtn}
+                    title="Edit"
+                    aria-label="Edit subcontractor"
+                    onClick={() => openEditModal({ kind: 'subcontractor', ...item })}
+                  >
+                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M15.502 1.94a.5.5 0 0 1 0 .706l-1 1a.5.5 0 0 1-.707 0L12.354 2.2l1-1a.5.5 0 0 1 .707 0l1.44 1.44z" />
+                      <path d="M11.854 2.7 2.5 12.05V14h1.95l9.354-9.354-1.95-1.95z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.subcontractorIconBtn} ${styles.subcontractorIconBtnDelete}`}
+                    onClick={() => openDeleteModal('subcontractor', item.id, `Delete subcontractor "${item.company}"?`)}
+                    title="Delete"
+                    aria-label="Delete subcontractor"
+                  >
+                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5.5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6zm2 .5a.5.5 0 0 1 1 0v6a.5.5 0 0 1-1 0V6z" />
+                      <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 1 1 0-2H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4 4v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4H4z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1629,25 +1293,10 @@ const DailyReportWorkspace: React.FC<DailyReportWorkspaceProps> = ({
           <div key={group.key} className={styles.taskGroup}>
             {/* Company header */}
             <div className={styles.taskGroupHeader}>
-              <div className={styles.taskGroupTitleSection}>
-                <div className={styles.taskGroupTitle}>
-                  <span className={styles.taskGroupCompany}>{group.company}</span>
-                  {group.workers > 0 && (
-                    <span className={styles.taskGroupWorkers}>{group.workers} Workers On Site</span>
-                  )}
-                </div>
-                {/* Permits for this company */}
-                {preTaskControls[group.company] && preTaskControls[group.company].length > 0 && (
-                  <div className={styles.companyPermitsBlock}>
-                    <p className={styles.companyPermitsLabel}>Permits</p>
-                    <div className={styles.companyPermitsList}>
-                      {preTaskControls[group.company].map((permit, pIdx) => (
-                        <span key={pIdx} className={styles.companyPermitTag}>
-                          {permit}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+              <div className={styles.taskGroupTitle}>
+                <span className={styles.taskGroupCompany}>{group.company}</span>
+                {group.workers > 0 && (
+                  <span className={styles.taskGroupWorkers}>{group.workers} Workers On Site</span>
                 )}
               </div>
               <button

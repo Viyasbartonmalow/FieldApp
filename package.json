@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1057.0",
+    "@aws-sdk/lib-dynamodb": "^3.1057.0",
     "@tailwindcss/vite": "^4.2.2",
     "aws-amplify": "^6.16.4",
     "axios": "^1.15.1",

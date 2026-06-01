@@ -60,7 +60,10 @@ export interface PTP {
 // API Response wrapper
 export interface ApiResponse<T = any> {
   success: boolean;
+  status?: number;
+  message?: string;
   data?: T;
+  errors?: Record<string, string[]>;
   error?: {
     code: string;
     message: string;
@@ -72,7 +75,7 @@ export interface ApiResponse<T = any> {
     total: number;
     pages: number;
   };
-  timestamp: DateTime;
+  timestamp?: DateTime;
 }
 
 // Auth types

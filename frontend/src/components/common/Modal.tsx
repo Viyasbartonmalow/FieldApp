@@ -13,7 +13,6 @@ interface ModalProps {
   errorMessage?: string | null
   children: React.ReactNode
   width?: 'sm' | 'md' | 'lg'
-  variant?: 'default' | 'task-add' | 'subcontractor-add'
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -28,14 +27,13 @@ const Modal: React.FC<ModalProps> = ({
   errorMessage,
   children,
   width = 'md',
-  variant = 'default',
 }) => {
   if (!isOpen) return null
 
   return (
     <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
       <div
-        className={`${styles.modal} ${width === 'sm' ? styles.sm : ''} ${width === 'lg' ? styles.lg : ''} ${variant === 'task-add' ? styles.taskAdd : ''} ${variant === 'subcontractor-add' ? styles.subcontractorAdd : ''}`}
+        className={`${styles.modal} ${width === 'sm' ? styles.sm : ''} ${width === 'lg' ? styles.lg : ''}`}
         onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.header}>

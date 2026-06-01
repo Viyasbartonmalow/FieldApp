@@ -4,6 +4,8 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import CreatePTPModal from '@/components/common/CreatePTPModal'
 import ProjectSelectionModal from '@/components/common/ProjectSelectionModal'
+import { useDataStoreReady } from '@/hooks/useDataStoreReady'
+import { useDataStoreDiagnostics } from '@/hooks/useDataStoreDiagnostics'
 import ptpWorkflowService, { PtpWorkflowRecord } from '@/services/ptpWorkflow.service'
 import './Dashboard.css'
 
@@ -170,11 +172,14 @@ const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [showCreateModal, setShowCreateModal] = useState(() => searchParams.get('createPTP') === '1')
   const [showProjectModal, setShowProjectModal] = useState(false)
+  const showSyncDebug = searchParams.get('debugSync') === '1'
 
-  // Clear the createPTP param from the URL once consumed
+  // Clear only the createPTP param once consumed and preserve other debug/query flags.
   useEffect(() => {
     if (searchParams.get('createPTP') === '1') {
-      setSearchParams({}, { replace: true })
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.delete('createPTP')
+      setSearchParams(nextParams, { replace: true })
     }
   }, [])
   const [ptps, setPtps] = useState<PTPItem[]>([])
@@ -217,7 +222,7 @@ const DashboardPage: React.FC = () => {
     }
   }, [location.state])
 
-  const loadPTPs = async () => {
+  const loadPTPs = async (attempt = 0) => {
     try {
       const rows = await ptpWorkflowService.listWorkflows({ limit: 200 })
         const mapped: PTPItem[] = rows.map((row) => {
@@ -249,7 +254,17 @@ const DashboardPage: React.FC = () => {
       })
 
       setPtps(mapped)
-    } catch {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      const isClearingState = errorMessage.includes('DataStore') && errorMessage.includes('Clearing')
+
+      if (isClearingState && attempt < 3) {
+        window.setTimeout(() => {
+          void loadPTPs(attempt + 1)
+        }, 1000 * (attempt + 1))
+        return
+      }
+
       setPtps([])
     }
   }
@@ -257,6 +272,17 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     loadPTPs()
   }, [])
+
+  const dataStoreReady = useDataStoreReady()
+  const syncDiagnostics = useDataStoreDiagnostics(showSyncDebug)
+
+  useEffect(() => {
+    // Reload PTPs once DataStore is ready to ensure data is fresh from cloud
+    if (dataStoreReady) {
+      console.log('[Dashboard] DataStore ready, loading PTPs')
+      loadPTPs()
+    }
+  }, [dataStoreReady])
 
   const handleRequestDelete = (ptp: PTPItem) => {
     setDeleteTarget(ptp)
@@ -496,6 +522,24 @@ const DashboardPage: React.FC = () => {
       <div className="dashboard-page-header">
         <h1 className="dashboard-page-title">Dashboard</h1>
       </div>
+
+      {showSyncDebug && (
+        <div className="dashboard-sync-debug" role="status" aria-live="polite">
+          <div className="dashboard-sync-debug-title">DataStore Diagnostics</div>
+          <div className="dashboard-sync-debug-grid">
+            <div><strong>Ready:</strong> {syncDiagnostics.isReady ? 'yes' : 'no'}</div>
+            <div><strong>Phase:</strong> {syncDiagnostics.syncPhase}</div>
+            <div><strong>Last Event:</strong> {syncDiagnostics.lastEvent}</div>
+            <div><strong>Event Count:</strong> {syncDiagnostics.eventCount}</div>
+            <div><strong>Controls:</strong> {syncDiagnostics.counts.controls}</div>
+            <div><strong>Task Details:</strong> {syncDiagnostics.counts.taskDetails}</div>
+            <div><strong>Updated:</strong> {syncDiagnostics.lastUpdated || 'n/a'}</div>
+          </div>
+          {syncDiagnostics.lastError && (
+            <div className="dashboard-sync-debug-error"><strong>Error:</strong> {syncDiagnostics.lastError}</div>
+          )}
+        </div>
+      )}
 
       {/* Project dropdown */}
       <div className="dashboard-project-row">

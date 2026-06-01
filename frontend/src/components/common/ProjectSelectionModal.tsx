@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import projectAppsyncService from '@/services/projectAppsync.service'
+import projectDataStoreService from '@/services/projectDataStore.service'
 import './ProjectSelectionModal.css'
 
 interface ProjectSelectionModalProps {
@@ -33,11 +33,13 @@ const ProjectSelectionModal: React.FC<ProjectSelectionModalProps> = ({ onClose, 
     const fetchProjects = async () => {
       try {
         setLoading(true)
-        const projectList = await projectAppsyncService.listProjectNames()
+        // Primary source: local DataStore (synced from DynamoDB via AppSync).
+        // Falls back to direct AppSync if DataStore is not yet populated.
+        const projectList = await projectDataStoreService.listProjectNames()
         setProjects(projectList)
         setError(null)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load projects')
+        setError(err instanceof Error ? err.message : 'Failed to load projects. Please try again.')
         setProjects([])
       } finally {
         setLoading(false)
@@ -139,9 +141,29 @@ const ProjectSelectionModal: React.FC<ProjectSelectionModalProps> = ({ onClose, 
             {loading ? (
               <div className="psm-loading">Loading projects...</div>
             ) : error ? (
-              <div className="psm-error">{error}</div>
+              <div className="psm-error">
+                <strong>Error:</strong> {error}
+                <br />
+                <small>Check browser console for details. Backend API may be unreachable.</small>
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="psm-empty">
+                <strong>No projects found</strong>
+                <small>
+                  The project list is empty. This may mean:
+                  <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                    <li>DataStore is still syncing from DynamoDB (wait a few seconds)</li>
+                    <li>The Project-…-stgdev DynamoDB table has no records</li>
+                    <li>AppSync is not accessible from your network</li>
+                  </ul>
+                  Check browser Console for sync logs.
+                </small>
+              </div>
             ) : paginatedProjects.length === 0 ? (
-              <div className="psm-empty">No projects found</div>
+              <div className="psm-empty">
+                <strong>No matching projects</strong>
+                <small>Try clearing your search filter.</small>
+              </div>
             ) : (
               paginatedProjects.map(project => (
                 <label

@@ -18,7 +18,6 @@ export interface SubcontractorItem {
   company: string
   projectName?: string
   workers: number
-  isAutoPopulated?: boolean
 }
 
 export interface TaskItem {
@@ -28,7 +27,6 @@ export interface TaskItem {
   task: string
   status: 'Not Started' | 'In Progress' | 'Completed'
   comments: string
-  permits?: string[]
 }
 
 export interface IncidentItem {

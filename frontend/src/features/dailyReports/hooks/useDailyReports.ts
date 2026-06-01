@@ -1,5 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
-import { DataStore } from 'aws-amplify/datastore'
+import { useCallback, useState } from 'react'
 import {
   DailyReportInput,
   DailyReportRecord,
@@ -34,63 +33,11 @@ const toIsoDate = (value: string): string => {
   return parsed.toISOString().split('T')[0]
 }
 
-const isIndexedDbStoreMissingError = (err: unknown): boolean => {
-  if (!(err instanceof Error)) return false
-  const message = err.message.toLowerCase()
-  return message.includes('transaction')
-    && message.includes('idbdatabase')
-    && message.includes('object stores')
-    && message.includes('not found')
-}
-
-const recoverDataStoreIndex = async (): Promise<void> => {
-  await DataStore.clear()
-  await DataStore.start()
-}
-
-const isDataStoreClearingError = (err: unknown): boolean => {
-  if (!(err instanceof Error)) return false
-  const message = err.message.toLowerCase()
-  return message.includes('datastorestateerror')
-    && message.includes('datastore.query')
-    && message.includes('clearing')
-}
-
-const wait = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    window.setTimeout(resolve, ms)
-  })
-
-const runWithClearingRetry = async <T>(operation: () => Promise<T>): Promise<T> => {
-  let lastError: unknown
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    try {
-      return await operation()
-    } catch (err) {
-      if (!isDataStoreClearingError(err)) {
-        throw err
-      }
-
-      lastError = err
-      await wait(200 + (attempt * 100))
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error('DataStore operation retry limit exceeded')
-}
-
 export const useDailyReports = (): UseDailyReportsResult => {
   const [reports, setReports] = useState<DailyReportRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const hasTriedIndexRecoveryRef = useRef(false)
-  const loadReportsInFlightRef = useRef<Promise<void> | null>(null)
-
-  const listReportsWithRetry = useCallback(async () => {
-    return runWithClearingRetry(() => dailyReportStore.listAll())
-  }, [])
 
   const mapModelToRecord = useCallback((item: {
     reportId: string
@@ -124,50 +71,20 @@ export const useDailyReports = (): UseDailyReportsResult => {
   }, [])
 
   const loadReports = useCallback(async () => {
-    if (loadReportsInFlightRef.current) {
-      return loadReportsInFlightRef.current
+    setLoading(true)
+    setError(null)
+    try {
+      const list = await dailyReportStore.listAll()
+      const mapped = list.map(mapModelToRecord)
+      mapped.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''))
+      setReports(mapped)
+      setSuccess(`Loaded ${mapped.length} reports.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load reports')
+    } finally {
+      setLoading(false)
     }
-
-    const run = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const list = await listReportsWithRetry()
-        const mapped = list.map(mapModelToRecord)
-        mapped.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''))
-        setReports(mapped)
-        setSuccess(`Loaded ${mapped.length} reports.`)
-      } catch (err) {
-        if (isIndexedDbStoreMissingError(err) && !hasTriedIndexRecoveryRef.current) {
-          try {
-            hasTriedIndexRecoveryRef.current = true
-            await recoverDataStoreIndex()
-            const list = await listReportsWithRetry()
-            const mapped = list.map(mapModelToRecord)
-            mapped.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''))
-            setReports(mapped)
-            setSuccess(`Loaded ${mapped.length} reports.`)
-            return
-          } catch (recoveryErr) {
-            setError(recoveryErr instanceof Error ? recoveryErr.message : 'Failed to recover local data store')
-            return
-          }
-        }
-        setError(err instanceof Error ? err.message : 'Failed to load reports')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    const runPromise = run().finally(() => {
-      if (loadReportsInFlightRef.current === runPromise) {
-        loadReportsInFlightRef.current = null
-      }
-    })
-
-    loadReportsInFlightRef.current = runPromise
-    return runPromise
-  }, [listReportsWithRetry, mapModelToRecord])
+  }, [mapModelToRecord])
 
   const saveReport = useCallback(async (input: DailyReportInput & { reportId?: string }) => {
     setLoading(true)
@@ -187,7 +104,7 @@ export const useDailyReports = (): UseDailyReportsResult => {
         remarks: input.remarks,
       }
 
-      const saved = await runWithClearingRetry(() => dailyReportStore.upsert(normalizedInput))
+      const saved = await dailyReportStore.upsert(normalizedInput)
       const mappedSaved = mapModelToRecord(saved)
 
       setReports((prev) => {
@@ -224,10 +141,10 @@ export const useDailyReports = (): UseDailyReportsResult => {
         reportDeliveryStore.deleteAllByReportId(reportId),
         reportObservationStore.deleteAllByReportId(reportId),
       ])
-      await runWithClearingRetry(() => dailyReportStore.deleteByReportId(reportId))
+      await dailyReportStore.deleteByReportId(reportId)
       setReports((prev) => prev.filter((item) => item.reportId !== reportId))
       setSuccess('Report deleted successfully.')
-      const refreshed = await runWithClearingRetry(() => dailyReportStore.listAll())
+      const refreshed = await dailyReportStore.listAll()
       setReports(refreshed.map(mapModelToRecord))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete report')
@@ -242,7 +159,7 @@ export const useDailyReports = (): UseDailyReportsResult => {
     setError(null)
 
     try {
-      const report = await runWithClearingRetry(() => dailyReportStore.get(reportId))
+      const report = await dailyReportStore.get(reportId)
       const mapped = report ? mapModelToRecord(report) : null
       setSuccess(mapped ? 'Report loaded successfully.' : 'Report not found.')
       return mapped

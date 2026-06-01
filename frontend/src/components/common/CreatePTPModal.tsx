@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './CreatePTPModal.module.css'
 
@@ -27,29 +27,33 @@ const OPTIONS: Option[] = [
   {
     id: 'start-new',
     title: 'Start a New PTP',
-    description: 'Create the daily PTP from the blank template.',
-    accentColor: '#7B2D2D',
+    description:
+      'Begin a fresh PTP workflow with no copied data from previous templates.',
+    accentColor: '#00263A',
     route: '/ptp/workflow?ptpType=standard',
   },
   {
     id: 'previous-day',
     title: 'Previous Day PTP',
-    description: 'Use the previous day PTP to create the new PTP and modify as required.',
-    accentColor: '#E35205',
+    description:
+      'Use the previous day PTP to create the new PTP and modify as required.',
+    accentColor: '#E35205',   /* fill_WDI17V — orange (selected state in Figma) */
     route: '/ptp/create/previous-day',
   },
   {
     id: 'trade-specific',
     title: 'Trade-Specific PTP',
-    description: 'Create the daily PTP using the pre-defined trade-specific templates.',
-    accentColor: '#4F758B',
+    description:
+      'Create the daily PTP using the pre-defined trade-specific templates to identify Activity and plan safe work activities effectively.',
+    accentColor: '#4F758B',   /* fill_CLAX0R — blue-grey */
     route: '/ptp/create/trade-specific',
   },
   {
     id: 'prior-dates',
     title: 'PTP from Prior Dates',
-    description: "Use the calendar to access PTP's from any prior date.",
-    accentColor: '#A5BAC9',
+    description:
+      "Use the calendar to access and quickly select PTP's from any prior date for consistent planning and also reuse PTP's from earlier dates.",
+    accentColor: '#A5BAC9',   /* fill_8XD96L — light blue */
     route: '/ptp/create/prior-dates',
   },
 ]
@@ -61,14 +65,6 @@ interface CreatePTPModalProps {
 const CreatePTPModal: React.FC<CreatePTPModalProps> = ({ onClose }) => {
   const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState<string>('start-new')
-  const overlayRef = useRef<HTMLDivElement>(null)
-
-  // Ensure overlay is always scrolled to top so header is visible (even when zoomed in)
-  useEffect(() => {
-    if (overlayRef.current) {
-      overlayRef.current.scrollTop = 0
-    }
-  }, [])
 
   const handleGetStarted = () => {
     const option = OPTIONS.find(o => o.id === selectedId)
@@ -80,7 +76,7 @@ const CreatePTPModal: React.FC<CreatePTPModalProps> = ({ onClose }) => {
 
   return (
     /* Overlay — Figma: fill_NP6TA9 = rgba(41,41,58,0.23) */
-    <div ref={overlayRef} className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
+    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
       {/* Modal card — Figma: Frame 427319112, white, radius 10px, 691×798 */}
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
 

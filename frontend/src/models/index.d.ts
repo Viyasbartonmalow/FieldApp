@@ -479,6 +479,7 @@ type EagerReportObservation = {
   readonly category?: string | null;
   readonly author?: string | null;
   readonly details?: string | null;
+  readonly attachmentKeys?: (string | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -493,6 +494,7 @@ type LazyReportObservation = {
   readonly category?: string | null;
   readonly author?: string | null;
   readonly details?: string | null;
+  readonly attachmentKeys?: (string | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

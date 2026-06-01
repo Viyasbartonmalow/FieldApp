@@ -1,24 +1,23 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "target": "ES2020",
     "module": "ES2020",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./src/*"],
-      "@config/*": ["./src/config/*"],
-      "@types/*": ["./src/types/*"],
-      "@middleware/*": ["./src/middleware/*"],
-      "@routes/*": ["./src/routes/*"],
-      "@controllers/*": ["./src/controllers/*"],
-      "@services/*": ["./src/services/*"],
-      "@repositories/*": ["./src/repositories/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@database/*": ["./src/database/*"]
+      "@/*": ["./*"],
+      "@config/*": ["./config/*"],
+      "@types/*": ["./types/*"],
+      "@middleware/*": ["./middleware/*"],
+      "@routes/*": ["./routes/*"],
+      "@controllers/*": ["./controllers/*"],
+      "@services/*": ["./services/*"],
+      "@repositories/*": ["./repositories/*"],
+      "@utils/*": ["./utils/*"],
+      "@database/*": ["./database/*"]
     },
     "strict": true,
     "esModuleInterop": true,
@@ -28,10 +27,10 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]

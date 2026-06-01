@@ -327,12 +327,6 @@
   border-radius: 6px;
 }
 
-.subcontractorStatus {
-  margin: 6px 0 10px;
-  color: #5a7c93;
-  font-size: 13px;
-}
-
 .subcontractorDivider {
   margin: 10px 0 14px;
   border: 0;
@@ -409,96 +403,6 @@
   color: #6c757d;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-}
-
-.addTaskForm {
-  gap: 8px;
-}
-
-.addTaskForm .addModalField {
-  gap: 4px;
-  font-size: 12px;
-  color: #212529;
-}
-
-.addTaskForm .addModalField span {
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: #343a40;
-}
-
-.taskModalProjectText {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: #2d333a;
-}
-
-.addTaskForm .input,
-.addTaskForm .select,
-.addTaskForm .textarea {
-  background: #f3f5f7;
-  border: 1px solid #c8d0d8;
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-size: 12px;
-  color: #1f252b;
-}
-
-.addTaskForm .textarea {
-  min-height: 72px;
-  resize: none;
-}
-
-.taskModalComments::placeholder,
-.addTaskForm .input::placeholder {
-  color: #9ba5af;
-  font-style: italic;
-  font-size: 10px;
-}
-
-.taskModalCounter {
-  margin-top: 2px;
-  font-size: 10px;
-  color: #99a3ad;
-  text-align: right;
-}
-
-.addSubcontractorForm {
-  gap: 8px;
-}
-
-.addSubcontractorForm .addModalField {
-  gap: 4px;
-  font-size: 12px;
-  color: #212529;
-}
-
-.addSubcontractorForm .addModalField span {
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: #343a40;
-}
-
-.addSubcontractorForm .input,
-.addSubcontractorForm .select {
-  background: #f3f5f7;
-  border: 1px solid #c8d0d8;
-  border-radius: 5px;
-  padding: 6px 8px;
-  font-size: 11px;
-  color: #1f252b;
-}
-
-.subcontractorSelectLook {
-  padding-right: 26px !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23525b65' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
 }
 
 .observationAddWrap {
@@ -803,10 +707,9 @@
 
 .taskGroupHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  gap: 14px;
 }
 
 .taskGroupTitle {
@@ -824,45 +727,6 @@
 .taskGroupWorkers {
   font-size: 12px;
   color: #5a7c93;
-}
-
-.taskGroupTitleSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1;
-}
-
-.companyPermitsBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.companyPermitsLabel {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: #2f3338;
-}
-
-.companyPermitsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.companyPermitTag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #f0f4f7;
-  border: 1px solid #d0d7df;
-  border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #2f3338;
-  white-space: nowrap;
 }
 
 .btnAddTask {
@@ -986,38 +850,6 @@
   margin-top: 10px;
   padding-top: 8px;
   border-top: 1px solid #eaeef2;
-}
-
-.taskPermitsBlock {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #eaeef2;
-}
-
-.taskPermitsLabel {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #2f3338;
-}
-
-.taskPermitsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.taskPermitTag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #f0f4f7;
-  border: 1px solid #d0d7df;
-  border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #2f3338;
-  white-space: nowrap;
 }
 
 .taskCommentsLabel {
@@ -1688,7 +1520,7 @@
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 67px);
-  background: var(--clr-bg-page, #F8FBFD);
+  background: #f2f4f7;
 }
 
 .header {
@@ -1753,131 +1585,63 @@
 
 .listContainer {
   flex: 1;
-  padding: 28px 28px 26px;
-}
-
-.listPageTitle {
-  margin: 0 0 14px;
-  font-size: 20px !important;
-  font-weight: 900 !important;
-  color: #1d252d;
-  line-height: 1.3;
+  padding: 18px 22px;
 }
 
 .filterBar {
   display: flex;
   align-items: flex-end;
-  gap: 18px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .filterGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 600;
-  color: #4c5661;
-  font-family: var(--font-ui, Arial, sans-serif);
+  color: #2f3338;
 }
 
 .filterSelect,
 .filterInput {
-  border: 2px solid #d4dbe2;
+  border: 1px solid #c8d0d9;
   background: #fff;
-  border-radius: 10px;
-  padding: 0 14px;
-  height: 40px;
-  font-size: 14px;
-  color: #5a6470;
+  border-radius: 5px;
+  padding: 7px 10px;
+  min-height: 32px;
+  font-size: 12px;
+  color: #2f3338;
   font-family: var(--font-ui, Arial, sans-serif);
-  outline: none;
-}
-
-.filterSelect:focus,
-.filterInput:focus {
-  border-color: #00263A;
 }
 
 .filterSelect {
-  min-width: 150px;
+  min-width: 108px;
 }
 
 .filterInput {
-  min-width: 130px;
-}
-
-.filterDateWrapper {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  min-width: 130px;
-}
-
-.filterDatePlaceholder {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #a0b4c3;
-  font-style: italic;
-  font-size: 14px;
-  font-weight: 400;
-  font-family: var(--font-ui, Arial, sans-serif);
-  pointer-events: none;
-  z-index: 1;
-  white-space: nowrap;
-}
-
-.filterDateWrapper .filterInput {
-  width: 100%;
+  min-width: 92px;
 }
 
 .btnCreateReport {
-  background: #00263A;
-  color: #ffffff;
+  background: #00324e;
+  color: #fff;
   border: 0;
-  border-radius: 8px;
-  padding: 0 18px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: var(--font-ui, Arial, sans-serif);
+  border-radius: 7px;
+  padding: 8px 13px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   margin-left: auto;
-  letter-spacing: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
-  white-space: nowrap;
-}
-
-.createIcon {
-  width: 16px;
-  height: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.createIcon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.listPanel {
-  background: #eef2f5;
-  border: 1px solid #e2e8ee;
-  border-radius: 10px;
-  padding: 22px 20px 16px;
 }
 
 .loadingText,
 .errorText,
 .noDataText {
-  padding: 26px;
+  padding: 20px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .loadingText {
@@ -1896,22 +1660,22 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .reportCard {
-  background: #ffffff;
-  border: 1px solid #d8e0e7;
-  border-radius: 12px;
-  padding: 14px 12px 14px 12px;
+  background: #fff;
+  border: 1px solid #cfd7df;
+  border-radius: 8px;
+  padding: 11px 13px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .reportHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   flex: 1;
 }
@@ -1923,65 +1687,55 @@
 .reportTitleRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 6px;
 }
 
 .reportTitle {
   margin: 0;
-  font-size: 16px;
-  color: #07344d;
-  font-family: var(--font-ui, Arial, sans-serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: #0d2e45;
   text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: #07344d;
+  text-underline-offset: 2px;
 }
 
 .reportMeta {
-  margin: 2px 0;
-  font-size: 13px;
-  font-weight: 400;
-  color: #6f7782;
-  font-family: var(--font-ui, Arial, sans-serif);
-  line-height: 1.3;
+  margin: 3px 0;
+  font-size: 11px;
+  color: #8193a0;
 }
 
 .reportSubmitted {
   margin: 3px 0 0;
-  font-size: 13px;
-  font-weight: 400;
-  color: #6f7782;
-  font-family: var(--font-ui, Arial, sans-serif);
-  line-height: 1.3;
+  font-size: 11px;
+  color: #5a7c93;
 }
 
 .statusBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 14px;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
   font-weight: 600;
-  font-family: var(--font-ui, Arial, sans-serif);
   white-space: nowrap;
-  line-height: 1.2;
 }
 
 .statusInProgress {
-  background: #d8dee4;
-  color: #495463;
+  background: #e5ebf0;
+  color: #3a4a58;
 }
 
 .statusFinalized {
-  background: #D1FAE5;
-  color: #065F46;
+  background: #d4edda;
+  color: #155724;
 }
 
 .reportActions {
   display: flex;
-  gap: 2px;
+  gap: 0;
   align-items: center;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .btnIcon {
@@ -1989,63 +1743,54 @@
   border: 0;
   cursor: pointer;
   color: #00324e;
-  width: 24px;
-  height: 24px;
+  width: 19px;
+  height: 19px;
   padding: 0;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-
-.btnIcon:hover {
-  background: #F3F4F6;
 }
 
 .btnIcon svg {
-  width: 18px;
-  height: 18px;
+  width: 12px;
+  height: 12px;
 }
 
 .btnDelete {
-  color: #EF4444;
-}
-
-.btnDelete:hover {
-  background: #FEF2F2;
+  color: #d22f27;
 }
 
 .paginationBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 6px 0 2px;
+  margin: 14px 0 2px;
 }
 
 .pagination {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 
 .pageButton {
-  border: 2px solid #9eb0be;
+  border: 1px solid #b8c4cd;
   background: #fff;
   color: #2c3b47;
-  width: 30px;
-  min-width: 30px;
-  max-width: 30px;
-  height: 30px;
-  min-height: 30px;
-  max-height: 30px;
+  width: 20px;
+  min-width: 20px;
+  max-width: 20px;
+  height: 20px;
+  min-height: 20px;
+  max-height: 20px;
   aspect-ratio: 1 / 1;
   padding: 0;
   border-radius: 50%;
   box-sizing: border-box;
   cursor: pointer;
-  font-size: 12px;
-  line-height: 30px;
+  font-size: 10px;
+  line-height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2059,21 +1804,21 @@
 }
 
 .pageArrow {
-  border: 2px solid #b8c4cd;
+  border: 1px solid #b8c4cd;
   background: #fff;
   color: #5a6b78;
-  width: 30px;
-  min-width: 30px;
-  max-width: 30px;
-  height: 30px;
-  min-height: 30px;
-  max-height: 30px;
+  width: 18px;
+  min-width: 18px;
+  max-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  max-height: 18px;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 10px;
   line-height: 1;
   cursor: pointer;
   padding: 0;
@@ -2086,13 +1831,13 @@
 
 .pageEllipsis {
   color: #5a6b78;
-  font-size: 13px;
+  font-size: 11px;
   padding: 0 2px;
 }
 
 .paginationInfo {
   text-align: left;
-  font-size: 14px;
+  font-size: 12px;
   color: #596a77;
   margin: 0;
 }
@@ -2104,23 +1849,22 @@
 
 .createInfoNote {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  background: #EAF4FB;
-  border: 1px solid #B8D9EE;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #1a3a4f;
-  line-height: 1.5;
-  font-family: var(--font-ui, Arial, sans-serif);
+  background: #f0f4f8;
+  border: 1px solid #c8d4de;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #2f3338;
+  line-height: 1.4;
 }
 
 .createInfoIcon {
-  font-size: 16px;
-  color: #3a86b4;
+  font-size: 14px;
+  color: #5a7c93;
   flex-shrink: 0;
-  line-height: 1;
+  margin-top: 1px;
 }
 
 .createField {
@@ -2128,106 +1872,5 @@
   gap: 6px;
   font-family: var(--font-ui, Arial, sans-serif);
   font-size: 13px;
-  font-weight: 600;
-  color: #1a2e3b;
-}
-
-.createField .select,
-.createField .input {
-  background: #EEF3F8;
-  border: 1px solid #d5dfe8;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 14px;
-  color: #2f3338;
-  font-family: var(--font-ui, Arial, sans-serif);
-  font-weight: 400;
-  width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.createField .select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-  cursor: pointer;
-}
-
-.createField .select option[value=''] {
-  color: #8fa3b1;
-  font-style: italic;
-}
-
-.createField .input[type='date']:not(:valid) {
-  color: #8fa3b1;
-  font-style: italic;
-}
-
-.createField .input[type='date']::-webkit-calendar-picker-indicator {
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-.dateInputWrapper {
-  position: relative;
-  width: 100%;
-}
-
-.datePlaceholder {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #a0b4c3;
-  font-style: italic;
-  font-size: 14px;
-  font-weight: 400;
-  font-family: var(--font-ui, Arial, sans-serif);
-  pointer-events: none;
-  z-index: 1;
-  letter-spacing: 0;
-}
-
-.dateInput {
-  position: relative;
-  background-color: #EEF3F8;
-  color: rgba(0,0,0,0);
-  caret-color: #2f3338;
-}
-
-.dateInput::-webkit-datetime-edit,
-.dateInput::-webkit-datetime-edit-fields-wrapper,
-.dateInput::-webkit-datetime-edit-text,
-.dateInput::-webkit-datetime-edit-month-field,
-.dateInput::-webkit-datetime-edit-day-field,
-.dateInput::-webkit-datetime-edit-year-field {
-  color: rgba(0,0,0,0);
-}
-
-.dateInput:valid {
-  color: #2f3338;
-}
-
-.dateInput:valid::-webkit-datetime-edit,
-.dateInput:valid::-webkit-datetime-edit-fields-wrapper,
-.dateInput:valid::-webkit-datetime-edit-text,
-.dateInput:valid::-webkit-datetime-edit-month-field,
-.dateInput:valid::-webkit-datetime-edit-day-field,
-.dateInput:valid::-webkit-datetime-edit-year-field {
-  color: #2f3338;
-}
-
-.dateInput:focus {
-  color: #2f3338;
-}
-
-.dateInput:focus::-webkit-datetime-edit,
-.dateInput:focus::-webkit-datetime-edit-fields-wrapper,
-.dateInput:focus::-webkit-datetime-edit-text,
-.dateInput:focus::-webkit-datetime-edit-month-field,
-.dateInput:focus::-webkit-datetime-edit-day-field,
-.dateInput:focus::-webkit-datetime-edit-year-field {
   color: #2f3338;
 }

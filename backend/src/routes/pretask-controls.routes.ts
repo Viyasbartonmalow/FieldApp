@@ -188,7 +188,7 @@ const getProjectNumber = async (client: DynamoDBClient, projectName: string): Pr
 
     if (matchingProject) {
       logger.info(`[PreTaskControls] Found project "${projectName}" with number: ${matchingProject.project_number || matchingProject.id}`)
-      return matchingProject.project_number || matchingProject.id
+      return matchingProject.project_number ?? matchingProject.id ?? null
     }
 
     logger.info(`[PreTaskControls] Project not found: "${projectName}" after scanning ${allProjects.length} projects`)

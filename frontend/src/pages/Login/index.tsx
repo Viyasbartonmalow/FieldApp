@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { loginSuccess, loginFailed } from '@/store/authSlice'
+import { clearAndSyncDataStore } from '@/services/datastore-sync'
 import type { UserRole } from '@/types'
 import './Login.css'
 
 const LoginPage: React.FC = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isLoading, setIsLoading] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [selectedRole, setSelectedRole] = useState<'foreman' | 'superintendent'>('foreman')
@@ -37,7 +39,23 @@ const LoginPage: React.FC = () => {
           expiresIn: 3600,
         },
       }))
-      navigate(role === 'foreman' ? '/dashboard?createPTP=1' : '/module-selection')
+      
+      // Preserve debugSync query flag across login redirects for in-app diagnostics.
+      const incomingParams = new URLSearchParams(location.search)
+      const debugSync = incomingParams.get('debugSync') === '1'
+
+      if (role === 'foreman') {
+        const nextParams = new URLSearchParams({ createPTP: '1' })
+        if (debugSync) nextParams.set('debugSync', '1')
+        navigate(`/dashboard?${nextParams.toString()}`)
+      } else {
+        const suffix = debugSync ? '?debugSync=1' : ''
+        navigate(`/module-selection${suffix}`)
+      }
+
+      // Clear local DataStore and resync from DynamoDB after login (background)
+      // Don't await so navigation isn't blocked
+      void clearAndSyncDataStore()
     } catch {
       setServerError('Sign in failed')
       dispatch(loginFailed('Sign in failed'))

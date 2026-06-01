@@ -212,4 +212,27 @@ type PreTaskPlanUserProfile
   modified_by_user_id: String
 }
 
+type PtpWorkflow
+  @model
+  @auth(rules: [{ allow: public, provider: apiKey }]) {
+  ptp_id: ID! @primaryKey
+  ptp_type: String!
+  title: String
+  trade: String
+  ptp_date: String
+  source_ptp_id: String
+  status: String!
+  tasks_json: String
+  activity_controls_json: String
+  requirements_json: String
+  emergency_contacts_json: String
+  crew_signin_json: String
+  review_json: String
+  day_closure_json: String
+  created_by: String
+  updated_by: String
+  created_at: AWSDateTime
+  updated_at: AWSDateTime
+}
+
 

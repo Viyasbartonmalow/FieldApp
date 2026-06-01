@@ -87,6 +87,7 @@ type ReportObservation
   category: String
   author: String
   details: String
+  attachmentKeys: [String]
 }
 
 type PreTaskPlanMaster

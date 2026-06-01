@@ -4,7 +4,7 @@ import styles from './SummaryCards.module.css'
 export interface SummaryCardData {
   label: string
   value: string | number
-  icon: React.ReactNode
+  icon: string
   unit?: string
 }
 

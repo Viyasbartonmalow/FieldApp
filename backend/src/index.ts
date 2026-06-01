@@ -13,7 +13,6 @@ import ptpRoutes from '@/routes/ptp.routes';
 import referenceRoutes from '@/routes/reference.routes';
 import ptpStepsRoutes from '@/routes/ptp-steps.routes';
 import ptpWorkflowRoutes from '@/routes/ptp-workflow.routes';
-import { ensurePtpWorkflowTable } from '@/routes/ptp-workflow.routes';
 import projectsRoutes from '@/routes/projects.routes';
 import pretaskControlsRoutes from '@/routes/pretask-controls.routes';
 import dailyReportsRoutes from '@/routes/daily-reports.routes';
@@ -91,8 +90,6 @@ const startServer = async () => {
       logger.warn('Database not available. Server will run with limited functionality.');
     } else {
       logger.info('Database connection successful');
-      await ensurePtpWorkflowTable();
-      logger.info('PTP workflow table is ready');
     }
 
     // Start HTTP server (with or without DB)

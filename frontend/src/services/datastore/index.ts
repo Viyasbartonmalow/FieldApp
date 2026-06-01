@@ -520,7 +520,7 @@ export const reportObservationStore = {
         if (changes.category !== undefined) u.category = changes.category
         if (changes.author !== undefined) u.author = changes.author
         if (changes.details !== undefined) u.details = changes.details
-        if (changes.attachmentKeys !== undefined) (u as any).attachmentKeys = changes.attachmentKeys
+        if (changes.attachmentKeys !== undefined) u.attachmentKeys = changes.attachmentKeys
       })
     )
     await appSyncRequest(UPDATE_REPORT_OBSERVATION, {

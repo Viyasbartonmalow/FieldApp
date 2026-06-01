@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
@@ -39,39 +39,13 @@ const DailyReportsPage: React.FC = () => {
   const [reportCreatedDate, setReportCreatedDate] = useState<string>('')
   const [summaryCards, setSummaryCards] = useState<SummaryCardData[]>([])
 
-  const handleGeneratePreview = useCallback((resolvedReportId: string) => {
-    navigate(`/daily-reports/${resolvedReportId}/preview`)
-  }, [navigate])
-
-  const handleBackFromPreview = useCallback(() => {
-    if (reportId) {
-      navigate(`/daily-reports/${reportId}`)
-    }
-  }, [navigate, reportId])
-
-  const handleFinalizeReport = useCallback(() => {
-    navigate('/daily-reports')
-  }, [navigate])
-
-  const handleMetadataChange = useCallback((metadata: { projectSite: string; createdDate: string }) => {
-    setProjectSiteName(metadata.projectSite)
-    setReportCreatedDate(metadata.createdDate)
-  }, [])
-
-  const handleRegisterSaveHandler = useCallback((handler: (() => Promise<void>) | null) => {
-    if (handler) {
-      setFooterAction(() => handler)
-      return
-    }
-    setFooterAction(null)
-  }, [])
-
-  // Reset tab whenever the report changes OR preview mode toggles.
-  // reportId in deps ensures a fresh tab when React reuses this component instance
-  // across route changes (list ↔ workspace) without unmounting.
   useEffect(() => {
-    setActiveTab(isPreviewMode ? 'preview' : 'subcontractors')
-  }, [reportId, isPreviewMode])
+    if (isPreviewMode) {
+      setActiveTab('preview')
+    } else if (activeTab === 'preview') {
+      setActiveTab('subcontractors')
+    }
+  }, [isPreviewMode, activeTab])
 
   // If no reportId and not in /new route, show the list view.
   if (showListView) {
@@ -126,13 +100,26 @@ const DailyReportsPage: React.FC = () => {
           <DailyReportWorkspace
             activeTab={activeTab}
             reportId={reportId}
-            onGeneratePreview={handleGeneratePreview}
-            onBackFromPreview={handleBackFromPreview}
-            onFinalizeReport={handleFinalizeReport}
-            onMetadataChange={handleMetadataChange}
+            onGeneratePreview={(resolvedReportId) => navigate(`/daily-reports/${resolvedReportId}/preview`)}
+            onBackFromPreview={() => {
+              if (reportId) {
+                navigate(`/daily-reports/${reportId}`)
+              }
+            }}
+            onFinalizeReport={() => navigate('/daily-reports')}
+            onMetadataChange={(metadata) => {
+              setProjectSiteName(metadata.projectSite)
+              setReportCreatedDate(metadata.createdDate)
+            }}
             onSummaryChange={setSummaryCards}
             onPrev={handlePrev}
-            onRegisterSaveHandler={handleRegisterSaveHandler}
+            onRegisterSaveHandler={(handler) => {
+              if (handler) {
+                setFooterAction(() => handler)
+                return
+              }
+              setFooterAction(null)
+            }}
             onFooterStateChange={setFooterState}
           />
         </div>
