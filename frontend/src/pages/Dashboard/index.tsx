@@ -186,6 +186,7 @@ const DashboardPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<PTPItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [exportTarget, setExportTarget] = useState<PTPItem | null>(null)
+  const [ptpModalMode, setPtpModalMode] = useState<'view' | 'export'>('export')
   const [exportRecord, setExportRecord] = useState<PtpWorkflowRecord | null>(null)
   const [isExportLoading, setIsExportLoading] = useState(false)
   const [isExportDownloading, setIsExportDownloading] = useState(false)
@@ -305,7 +306,8 @@ const DashboardPage: React.FC = () => {
     }
   }
 
-  const handleOpenExport = async (ptp: PTPItem) => {
+  const openPtpModal = async (ptp: PTPItem, mode: 'view' | 'export') => {
+    setPtpModalMode(mode)
     setExportTarget(ptp)
     setExportRecord(null)
     try {
@@ -319,10 +321,19 @@ const DashboardPage: React.FC = () => {
     }
   }
 
+  const handleOpenExport = async (ptp: PTPItem) => {
+    await openPtpModal(ptp, 'export')
+  }
+
+  const handleOpenViewPTP = async (ptp: PTPItem) => {
+    await openPtpModal(ptp, 'view')
+  }
+
   const handleCloseExport = () => {
     if (isExportLoading) return
     setExportTarget(null)
     setExportRecord(null)
+    setPtpModalMode('export')
   }
 
   const handleDownloadPDF = async () => {
@@ -572,7 +583,7 @@ const DashboardPage: React.FC = () => {
 
         {/* Filter row */}
         <div className="dashboard-filter-row">
-          <FilterSelect label="All Companies" value={filterCompany} options={['Atlas Electrical', 'ProPipe Mechanical', 'All Companies']} onChange={setFilterCompany} />
+          <FilterSelect label="All Companies" value={filterCompany} options={['STG India', 'All Companies']} onChange={setFilterCompany} />
           <FilterSelect label="All Status" value={filterStatus} options={['In Progress', 'Submitted', 'Reviewed', 'Closed']} onChange={setFilterStatus} />
           <div
             className={`dash-filter dash-filter-date ${!filterDate && !isDateFieldActive ? 'dash-filter-date--show-placeholder' : ''}`}
@@ -613,7 +624,7 @@ const DashboardPage: React.FC = () => {
               <div className="dashboard-ptp-item" key={ptp.id}>
                 <div className="dashboard-ptp-main">
                   <div className="dashboard-ptp-top">
-                    <a href="#" className="dashboard-ptp-name" onClick={e => { e.preventDefault(); navigate(`/ptp/workflow?ptpId=${ptp.id}`) }}>
+                    <a href="#" className="dashboard-ptp-name" onClick={e => { e.preventDefault(); void handleOpenViewPTP(ptp) }}>
                       {ptp.name}
                     </a>
                     <span className={`dash-status-badge ${s.cls}`}>{s.label}</span>
@@ -753,11 +764,11 @@ const DashboardPage: React.FC = () => {
     )}
 
     {exportTarget && (
-      <div className="dashboard-export-overlay" role="dialog" aria-modal="true" aria-label="Export PTP">
+      <div className="dashboard-export-overlay" role="dialog" aria-modal="true" aria-label={ptpModalMode === 'view' ? 'View PTP' : 'Export PTP'}>
         <div className="dashboard-export-modal">
           <div className="dashboard-export-header">
-            <h3 className="dashboard-export-title">Export PTP</h3>
-            <button className="dashboard-export-close" type="button" onClick={handleCloseExport} aria-label="Close export modal">
+            <h3 className="dashboard-export-title">{ptpModalMode === 'view' ? 'View PTP' : 'Export PTP'}</h3>
+            <button className="dashboard-export-close" type="button" onClick={handleCloseExport} aria-label={ptpModalMode === 'view' ? 'Close view modal' : 'Close export modal'}>
               ✕
             </button>
           </div>
@@ -975,9 +986,11 @@ const DashboardPage: React.FC = () => {
 
           <div className="dashboard-export-actions">
             <button type="button" className="dashboard-export-btn dashboard-export-btn-close" onClick={handleCloseExport} disabled={isExportDownloading}>Close</button>
-            <button type="button" className="dashboard-export-btn dashboard-export-btn-download" onClick={handleDownloadPDF} disabled={isExportDownloading}>
-              {isExportDownloading ? 'Generating PDF...' : 'Download PDF'}
-            </button>
+            {ptpModalMode === 'export' && (
+              <button type="button" className="dashboard-export-btn dashboard-export-btn-download" onClick={handleDownloadPDF} disabled={isExportDownloading}>
+                {isExportDownloading ? 'Generating PDF...' : 'Download PDF'}
+              </button>
+            )}
           </div>
         </div>
       </div>

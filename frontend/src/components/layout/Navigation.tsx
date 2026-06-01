@@ -78,7 +78,13 @@ const Navigation: React.FC<NavigationProps> = ({ onToggleSidebar }) => {
         </span>
 
         {user && (
-          <span className="dr-user-chip" aria-label="User initials">{initials}</span>
+          <span
+            className="dr-user-chip"
+            aria-label={`User initials, role ${user.role ?? 'Foreman'}`}
+            title={user.role ?? 'Foreman'}
+          >
+            {initials}
+          </span>
         )}
 
         <button type="button" className="dr-exit-btn" onClick={handleLogout} aria-label="Exit">
