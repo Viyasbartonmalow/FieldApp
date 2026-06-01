@@ -971,6 +971,12 @@
 .iconBtnDelete:hover { background: rgba(220,38,38,0.08); color: #DC2626; }
 .taskActionEdit { color: #003247; }
 .taskActionDelete { color: #DC2626; }
+.taskActionIcon {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
 
 /* ── Activity & Controls dual pane ── */
 .dualPane {

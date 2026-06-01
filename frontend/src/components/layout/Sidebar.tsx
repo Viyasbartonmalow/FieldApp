@@ -41,6 +41,7 @@ const SettingsIcon = () => (
 )
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  console.log('Rendering Sidebar, isOpen:', isOpen)
   const location = useLocation()
   const { user } = useSelector((state: RootState) => state.auth)
 

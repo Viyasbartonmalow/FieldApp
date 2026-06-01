@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { RootState } from '@/store'
 import { logout } from '@/store/authSlice'
 import { useLanguage } from '@/context/LanguageContext'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
 import './Navigation.css'
 
 interface NavigationProps {
@@ -62,49 +61,32 @@ const Navigation: React.FC<NavigationProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      {/* Right: daily report controls OR default header controls */}
+      {/* Right: feedback + help + online + user + exit */}
       <div className="navbar-right">
-        {isDailyReportsPage ? (
-          <>
-            <span className="dr-online-chip" aria-label="Online status">
-              <span className="dr-online-dot" />
-              Online
-            </span>
-            <span className="dr-user-chip" aria-label="User initials">{initials}</span>
-            <button type="button" className="dr-exit-btn" onClick={handleLogout}>
-              Exit
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M9 3h4v10H9M3 8h8M8 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </>
-        ) : (
-          <>
-            <LanguageSwitcher variant="header" />
+        <button className="dr-feedback-btn" aria-label="Feedback">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M1 14l1-4H1a3 3 0 013-3h8a3 3 0 013 3v2a3 3 0 01-3 3H5l-4 3v-3z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          </svg>
+          <span>Feedback</span>
+        </button>
 
-            <button className="navbar-bell" aria-label="Notifications">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 2a6 6 0 00-6 6c0 3.5-1.5 5-2 5.5h16c-.5-.5-2-2-2-5.5a6 6 0 00-6-6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                <path d="M8.5 17a1.5 1.5 0 003 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
+        <button className="dr-help-btn" aria-label="Help">?</button>
 
-            {user && (
-              <div className="navbar-user-area">
-                <div className="navbar-user-avatar">{initials}</div>
-                <div className="navbar-user-info">
-                  <span className="navbar-user-name">
-                    {user.lastName},{user.firstName}
-                  </span>
-                  <span className="navbar-user-role">{user.role ?? 'Foreman'}</span>
-                </div>
-                <button className="navbar-logout-btn" onClick={handleLogout}>
-                  {t('common.logout')}
-                </button>
-              </div>
-            )}
-          </>
+        <span className="dr-online-chip" aria-label="Online status">
+          <span className="dr-online-dot" />
+          Online
+        </span>
+
+        {user && (
+          <span className="dr-user-chip" aria-label="User initials">{initials}</span>
         )}
+
+        <button type="button" className="dr-exit-btn" onClick={handleLogout} aria-label="Exit">
+          Exit
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M9 3h4v10H9M3 8h8M8 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
       </div>
     </nav>
   )

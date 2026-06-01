@@ -5,7 +5,7 @@ import Sidebar from './Sidebar'
 import './Layout.css'
 
 const Layout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className={`layout ${sidebarOpen ? 'layout--sidebar-open' : 'layout--sidebar-closed'}`}>

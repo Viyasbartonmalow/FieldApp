@@ -1441,10 +1441,10 @@ const PTPWorkflowPage: React.FC = () => {
                         <div className={styles.taskDetails}>
                           <div className={styles.taskDetailsActions}>
                             <button className={`${styles.iconBtn} ${styles.taskActionEdit}`} onClick={e => { e.stopPropagation(); startEditTask(task) }} title="Edit">
-                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2a1.5 1.5 0 012.121 2.121L4 11.5H2v-2L9.5 2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/></svg>
+                              <img src="/images/DashboardEdit.png" alt="Edit" className={styles.taskActionIcon} />
                             </button>
                             <button className={`${styles.iconBtn} ${styles.taskActionDelete}`} onClick={e => { e.stopPropagation(); requestDeleteTask(task.id) }} title="Delete">
-                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5h4V4M4 4l1 8h4l1-8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                              <img src="/images/DashboardDelete.png" alt="Delete" className={styles.taskActionIcon} />
                             </button>
                           </div>
                           <div className={styles.taskField}>
@@ -2199,11 +2199,9 @@ const PTPWorkflowPage: React.FC = () => {
 
       {/* ── Footer navigation ── */}
       <div className={styles.footer}>
-        {stepIdx > 0 && (
-          <button className={styles.btnPrev} onClick={goBack} disabled={isSaving}>
-            &larr; Prev
-          </button>
-        )}
+        <button className={styles.btnPrev} onClick={goBack} disabled={isSaving}>
+          &larr; Prev
+        </button>
         <div style={{flex:1}} />
 
         {currentStep === 'crew-signin'

@@ -578,16 +578,17 @@ const DashboardPage: React.FC = () => {
             className={`dash-filter dash-filter-date ${!filterDate && !isDateFieldActive ? 'dash-filter-date--show-placeholder' : ''}`}
             data-placeholder="Select Date"
           >
-            <input
+           <input
               type={isDateFieldActive || Boolean(filterDate) ? 'date' : 'text'}
               className="dash-date-input"
+              
               value={filterDate}
               onChange={e => setFilterDate(e.target.value)}
               onFocus={() => setIsDateFieldActive(true)}
               onBlur={() => {
                 if (!filterDate) setIsDateFieldActive(false)
               }}
-              placeholder=""
+              placeholder="Select Date"
             />
           </div>
 
