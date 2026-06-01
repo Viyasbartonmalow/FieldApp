@@ -30,6 +30,7 @@ export interface PtpWorkflowRecord {
   updated_by: string | null
   created_at: string
   updated_at: string
+  project_number?: string
 }
 
 interface CreateWorkflowInput {
@@ -211,6 +212,7 @@ const mapControlToRecord = (control: any, details: any[]): PtpWorkflowRecord => 
     updated_by: control.modified_by_user_id ?? null,
     created_at: control.createdAt ?? nowIso(),
     updated_at: control.updatedAt ?? nowIso(),
+    project_number: control.project_number ?? undefined,
   }
 }
 

@@ -62,6 +62,7 @@ interface PTPItem {
   createdOn: string
   submittedBy: string
   lastUpdated: string
+  project_number?: string
 }
 
 const STATUS_CONFIG: Record<PTPItem['status'], { label: string; cls: string }> = {
@@ -251,6 +252,7 @@ const DashboardPage: React.FC = () => {
             createdOn,
             submittedBy: row.created_by || row.updated_by || 'Unknown',
           lastUpdated: updated,
+          project_number: row.project_number,
         }
       })
 
@@ -397,7 +399,8 @@ const DashboardPage: React.FC = () => {
 
   const filteredPTPs = useMemo(() => {
     return ptps.filter((p) => {
-      if (selectedProject && !p.name.toLowerCase().includes(selectedProject.toLowerCase())) return false
+      // project_number field in PTP records contains the project name, not ID
+      if (selectedProject && p.project_number !== selectedProject) return false
       if (filterCompany && !p.name.toLowerCase().includes(filterCompany.toLowerCase())) return false
       if (filterStatus) {
         const normalizedFilterStatus = filterStatus.toLowerCase().replace(/\s+/g, '-')
@@ -451,12 +454,12 @@ const DashboardPage: React.FC = () => {
   const endRecord = totalPtpCount === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalPtpCount)
 
   const statCards = [
-    { label: "Total PTP's", value: ptps.length, icon: <TotalIcon />,      color: '#1B4F72', bgColor: 'rgba(27,79,114,0.12)' },
-    { label: 'In Progress', value: ptps.filter((p) => p.status === 'in-progress').length, icon: <InProgressIcon />, color: '#E35205', bgColor: 'rgba(227,82,5,0.12)' },
-    { label: 'Submitted',   value: ptps.filter((p) => p.status === 'submitted').length, icon: <SubmittedIcon />,  color: '#4D81E7', bgColor: 'rgba(77,129,231,0.12)' },
-    { label: 'Reviewed',    value: ptps.filter((p) => p.status === 'reviewed').length, icon: <ReviewedIcon />,   color: '#22C55E', bgColor: 'rgba(34,197,94,0.12)' },
-    { label: 'Flagged',     value: ptps.filter((p) => p.isFlagged).length, icon: <FlaggedIcon />,    color: '#D97706', bgColor: 'rgba(217,119,6,0.12)' },
-    { label: 'Closed',      value: ptps.filter((p) => p.status === 'closed').length, icon: <ClosedIcon />,     color: '#DC2626', bgColor: 'rgba(220,38,38,0.12)' },
+    { label: "Total PTP's", value: filteredPTPs.length, icon: <TotalIcon />,      color: '#1B4F72', bgColor: 'rgba(27,79,114,0.12)' },
+    { label: 'In Progress', value: filteredPTPs.filter((p) => p.status === 'in-progress').length, icon: <InProgressIcon />, color: '#E35205', bgColor: 'rgba(227,82,5,0.12)' },
+    { label: 'Submitted',   value: filteredPTPs.filter((p) => p.status === 'submitted').length, icon: <SubmittedIcon />,  color: '#4D81E7', bgColor: 'rgba(77,129,231,0.12)' },
+    { label: 'Reviewed',    value: filteredPTPs.filter((p) => p.status === 'reviewed').length, icon: <ReviewedIcon />,   color: '#22C55E', bgColor: 'rgba(34,197,94,0.12)' },
+    { label: 'Flagged',     value: filteredPTPs.filter((p) => p.isFlagged).length, icon: <FlaggedIcon />,    color: '#D97706', bgColor: 'rgba(217,119,6,0.12)' },
+    { label: 'Closed',      value: filteredPTPs.filter((p) => p.status === 'closed').length, icon: <ClosedIcon />,     color: '#DC2626', bgColor: 'rgba(220,38,38,0.12)' },
   ]
 
   const handleProjectSelectionsSave = (projects: string[]) => {
