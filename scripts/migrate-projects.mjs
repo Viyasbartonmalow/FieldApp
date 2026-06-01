@@ -17,7 +17,7 @@
  *   node scripts/migrate-projects.mjs
  * 
  * Or with npx (from the root):
- *   npx node scripts/migrate-projects.mjs
+ *   npx node scripts/migrate-projects.mjs   
  */
 
 // Configuration
