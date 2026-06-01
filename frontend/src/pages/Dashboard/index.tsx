@@ -823,21 +823,6 @@ const DashboardPage: React.FC = () => {
 
                 <hr className="export-divider" />
 
-                {/* Work Steps */}
-                <div className="export-section">
-                  <h3 className="export-section-title">Work Steps</h3>
-                  {exportWorkSteps.length > 0 ? exportWorkSteps.map((step: any, idx: number) => (
-                    <div className="export-work-step" key={`${step.id ?? 'step'}-${idx}`}>
-                      <h4 className="export-step-name">Work Steps {idx + 1}</h4>
-                      <div className="export-step-detail"><strong>Hazards or Exposures:</strong> {step.activityExposures || '-'}</div>
-                      <div className="export-step-detail"><strong>Tools/Power Tools:</strong> {Array.isArray(step.toolsEquipment) ? step.toolsEquipment.join(', ') || '-' : '-'}</div>
-                      <div className="export-step-detail"><strong>Control Measures:</strong> {step.controlMeasures || '-'}</div>
-                    </div>
-                  )) : <div className="export-item">No work steps recorded.</div>}
-                </div>
-
-                <hr className="export-divider" />
-
                 {/* Hazards & Control Measures */}
                 <div className="export-section">
                   <h3 className="export-section-title">Hazards &amp; Control Measures</h3>
@@ -893,6 +878,21 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <hr className="export-divider" />
+
+                {/* Work Steps */}
+                <div className="export-section">
+                  <h3 className="export-section-title">Work Steps</h3>
+                  {exportWorkSteps.length > 0 ? exportWorkSteps.map((step: any, idx: number) => (
+                    <div className="export-work-step" key={`${step.id ?? 'step'}-${idx}`}>
+                      <h4 className="export-step-name">Work Steps {idx + 1}</h4>
+                      <div className="export-step-detail"><strong>Hazards or Exposures:</strong> {step.activityExposures || '-'}</div>
+                      <div className="export-step-detail"><strong>Tools/Power Tools:</strong> {Array.isArray(step.toolsEquipment) ? step.toolsEquipment.join(', ') || '-' : '-'}</div>
+                      <div className="export-step-detail"><strong>Control Measures:</strong> {step.controlMeasures || '-'}</div>
+                    </div>
+                  )) : <div className="export-item">No work steps recorded.</div>}
                 </div>
 
                 <hr className="export-divider" />
