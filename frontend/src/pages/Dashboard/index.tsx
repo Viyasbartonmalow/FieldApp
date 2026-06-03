@@ -399,8 +399,12 @@ const DashboardPage: React.FC = () => {
 
   const filteredPTPs = useMemo(() => {
     return ptps.filter((p) => {
-      // project_number field in PTP records contains the project name, not ID
-      if (selectedProject && p.project_number !== selectedProject) return false
+      // Normalize project comparison to avoid misses from casing/whitespace differences.
+      if (selectedProject) {
+        const selected = selectedProject.trim().toLowerCase()
+        const recordProject = (p.project_number ?? '').trim().toLowerCase()
+        if (recordProject !== selected) return false
+      }
       if (filterCompany && !p.name.toLowerCase().includes(filterCompany.toLowerCase())) return false
       if (filterStatus) {
         const normalizedFilterStatus = filterStatus.toLowerCase().replace(/\s+/g, '-')
@@ -468,6 +472,11 @@ const DashboardPage: React.FC = () => {
 
     if (!nextSelections.includes(selectedProject) && nextSelections.length > 0) {
       setSelectedProject(nextSelections[0])
+      return
+    }
+
+    if (nextSelections.length === 0) {
+      setSelectedProject('')
     }
   }
 

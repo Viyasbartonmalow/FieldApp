@@ -106,9 +106,15 @@ const DailyReportsList: React.FC = () => {
     return true
   })
 
-  const totalPages = Math.ceil(filteredReports.length / itemsPerPage)
+  const totalPages = Math.max(1, Math.ceil(filteredReports.length / itemsPerPage))
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedReports = filteredReports.slice(startIndex, startIndex + itemsPerPage)
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
 
   const paginationItems: Array<number | 'ellipsis'> = (() => {
     if (totalPages <= 6) {

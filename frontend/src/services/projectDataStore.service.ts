@@ -126,14 +126,6 @@ async function fetchProjectNamesFromDataStore(limit?: number): Promise<string[]>
 
 // ─── Public service ──────────────────────────────────────────────────────────
 
-export interface ProjectRecord {
-  project_number: string
-  project_name: string
-  project_code?: string | null
-  job_number?: number | null
-  state?: string | null
-}
-
 const projectDataStoreService = {
   /**
    * Return sorted project names.
@@ -249,98 +241,6 @@ const projectDataStoreService = {
       console.log(`[projectDataStore] ✓ Cache warmed — ${names.length} projects in DataStore`)
     } catch (err) {
       console.warn('[projectDataStore] Cache warm failed (non-fatal):', err)
-    }
-  },
-
-  /**
-   * Get project records with both project_number and project_name.
-   * Useful for mapping project names to project numbers.
-   */
-  async listProjectRecords(limit?: number): Promise<ProjectRecord[]> {
-    // ── 1. Wait for sync if not ready ────────────────────────────────────────
-    if (!isDataStoreReady()) {
-      console.log('[projectDataStore] Waiting for DataStore to be ready…')
-      await waitForDataStoreReady(READY_TIMEOUT_MS)
-      console.log('[projectDataStore] DataStore ready signal received')
-    } else {
-      console.log('[projectDataStore] DataStore already ready')
-    }
-
-    // ── 2. Try DataStore (local, fast) ───────────────────────────────────────
-    try {
-      console.log('[projectDataStore] Querying DataStore for Project records...')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const projects = (await DataStore.query(Project as any)) as ProjectRecord[]
-      console.log(`[projectDataStore] DataStore.query(Project) returned ${projects.length} records`)
-      
-      const records = projects
-        .filter((p) => p.project_name?.trim())
-        .sort((a, b) => (a.project_name || '').localeCompare(b.project_name || ''))
-      
-      if (records.length > 0) {
-        console.log(`[projectDataStore] ✅ SUCCESS: Loaded ${records.length} project records from LOCAL DataStore`)
-        return limit ? records.slice(0, limit) : records
-      }
-      
-      console.warn('[projectDataStore] ⚠️ DataStore returned 0 projects — attempting fallback to AppSync...')
-    } catch (err) {
-      console.error('[projectDataStore] ❌ DataStore query error (non-critical, will fallback):', err)
-    }
-
-    // ── 3. Fallback: direct AppSync query ────────────────────────────────────
-    try {
-      console.log('[projectDataStore] Attempting AppSync HTTP fallback...')
-      const records: ProjectRecord[] = []
-      let nextToken: string | null | undefined = null
-      const pageLimit = limit ? Math.min(limit, 1000) : 1000
-
-      do {
-        const resp = await fetch(APPSYNC_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': APPSYNC_API_KEY,
-          },
-          body: JSON.stringify({
-            query: LIST_PROJECTS_GQL,
-            variables: { limit: pageLimit, nextToken },
-          }),
-        })
-
-        if (!resp.ok) {
-          console.error(`[projectDataStore] AppSync HTTP Error ${resp.status}`)
-          throw new Error(`AppSync responded ${resp.status}`)
-        }
-
-        const payload = (await resp.json()) as ListProjectsGqlResponse
-        if (payload.errors?.length) {
-          const errorMsg = payload.errors.map((e) => e.message).join(', ')
-          console.error('[projectDataStore] AppSync GraphQL Error:', errorMsg)
-          throw new Error(errorMsg)
-        }
-
-        for (const item of payload.data?.listProjects?.items ?? []) {
-          if (item?.project_name?.trim()) {
-            records.push({
-              project_number: item.project_number || '',
-              project_name: item.project_name.trim(),
-            })
-          }
-        }
-
-        nextToken = payload.data?.listProjects?.nextToken
-      } while (nextToken && (!limit || records.length < limit))
-
-      if (records.length > 0) {
-        console.log(`[projectDataStore] ✅ FALLBACK SUCCESS: Loaded ${records.length} project records from AppSync`)
-        return records
-      }
-
-      console.error('[projectDataStore] ❌ AppSync fallback also returned 0 projects')
-      return []
-    } catch (err) {
-      console.error('[projectDataStore] ❌ AppSync fallback failed:', err)
-      return []
     }
   },
 }

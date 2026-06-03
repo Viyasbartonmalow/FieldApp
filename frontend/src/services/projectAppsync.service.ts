@@ -63,6 +63,7 @@ const normalizeCompanyName = (row: LegacyPretaskControlRow): string => {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
 const PRETASK_FETCH_TIMEOUT_MS = 20000
+const PROJECT_LIST_FETCH_TIMEOUT_MS = 15000
 const APPSYNC_ENDPOINT = (amplifyconfig as { aws_appsync_graphqlEndpoint?: string }).aws_appsync_graphqlEndpoint
 const APPSYNC_API_KEY = (amplifyconfig as { aws_appsync_apiKey?: string }).aws_appsync_apiKey
 
@@ -103,20 +104,24 @@ class ProjectAppsyncService {
     const pageLimit = limit ? Math.min(limit, 1000) : 1000
 
     do {
-      const response = await fetch(APPSYNC_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': APPSYNC_API_KEY,
-        },
-        body: JSON.stringify({
-          query: LIST_PROJECTS_QUERY,
-          variables: {
-            limit: pageLimit,
-            nextToken,
+      const response = await fetchWithTimeout(
+        APPSYNC_ENDPOINT,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': APPSYNC_API_KEY,
           },
-        }),
-      })
+          body: JSON.stringify({
+            query: LIST_PROJECTS_QUERY,
+            variables: {
+              limit: pageLimit,
+              nextToken,
+            },
+          }),
+        },
+        PROJECT_LIST_FETCH_TIMEOUT_MS
+      )
 
       if (!response.ok) {
         throw new Error(`AppSync listProjects request failed with status ${response.status}`)
@@ -141,12 +146,16 @@ class ProjectAppsyncService {
   }
 
   private async listProjectNamesFromLegacy(limit?: number): Promise<string[]> {
-    const response = await fetch(`${API_BASE_URL}/projects/legacy-projects`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/projects/legacy-projects`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    })
+      PROJECT_LIST_FETCH_TIMEOUT_MS
+    )
 
     if (!response.ok) {
       throw new Error(`Legacy projects request failed with status ${response.status}`)

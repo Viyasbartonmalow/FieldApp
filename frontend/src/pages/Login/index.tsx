@@ -125,8 +125,7 @@ const LoginPage: React.FC = () => {
           <button
             type="button"
             className="login-btn-crew"
-            disabled={isLoading}
-            onClick={() => handleSignIn('crew' as UserRole)}
+            disabled
           >
             Click here to log in as Crew Member
           </button>
